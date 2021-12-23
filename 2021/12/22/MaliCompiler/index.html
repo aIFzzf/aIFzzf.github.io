@@ -40,8 +40,9 @@
 <meta property="og:image" content="http://example.com/2021/12/22/MaliCompiler/Untitled7.png">
 <meta property="og:image" content="http://example.com/2021/12/22/MaliCompiler/Untitled8.png">
 <meta property="og:image" content="http://example.com/2021/12/22/MaliCompiler/Untitled9.png">
+<meta property="og:image" content="http://example.com/2021/12/22/MaliCompiler/Untitled5.png">
 <meta property="article:published_time" content="2021-12-22T11:59:48.000Z">
-<meta property="article:modified_time" content="2021-12-22T14:40:36.794Z">
+<meta property="article:modified_time" content="2021-12-23T13:39:39.088Z">
 <meta property="article:author" content="NeoZheng">
 <meta property="article:tag" content="性能">
 <meta name="twitter:card" content="summary">
@@ -201,10 +202,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-12-22 19:59:48 / 修改时间：22:40:36" itemprop="dateCreated datePublished" datetime="2021-12-22T19:59:48+08:00">2021-12-22</time>
+              <time title="创建时间：2021-12-22 19:59:48" itemprop="dateCreated datePublished" datetime="2021-12-22T19:59:48+08:00">2021-12-22</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-12-23 21:39:39" itemprop="dateModified" datetime="2021-12-23T21:39:39+08:00">2021-12-23</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -280,8 +287,10 @@
 <p>在Bifrost Valhall 家族的 Mali GPU 使用 index-draven vertex shading(IDVS)。它会在两个binaries编译vertex shaders，position shader，它只计算位置并为每个索引顶点执行，varying shader，它计算剩余的非位置顶点属性输出，并且只对作为剔除后幸存下来的可见图元的一部分的顶点执行。所以可以看到在使用mali compiler 编译处理顶点着色器时，会Position variant 和 Varying variant。</p>
 <p><img src="Untitled9.png"></p>
 <p><em>上图为malioc shader.vert-c Mali-G78的执行结果</em></p>
-<h3 id="Work-registers"><a href="#Work-registers" class="headerlink" title="Work registers"></a>Work registers</h3><p>该GPU可用最多的寄存器。可用的物理寄存器池在正在执行的着色器线程之间分配。因此，减少工作寄存器的使用可以增加可以同时执行的线程数，有助于保持 GPU工作忙碌。上图该型号GPU最多可用寄存器为60（建议少于32个）</p>
-<h3 id="Uniform-registers"><a href="#Uniform-registers" class="headerlink" title="Uniform registers"></a>Uniform registers</h3><p>正在使用的常量寄存器</p>
+<h3 id="Work-registers"><a href="#Work-registers" class="headerlink" title="Work registers"></a>Work registers</h3><p>该shader工作使用的寄存器数量。可用的物理寄存器池在正在执行的着色器线程之间分配。因此，减少工作寄存器的使用可以增加可以同时执行的线程数，有助于保持 GPU工作忙碌。</p>
+<p><img src="Untitled5.png"></p>
+<p><em>上图为malioc shader.frag  -c Mali-G72运算结果</em></p>
+<h3 id="Uniform-registers"><a href="#Uniform-registers" class="headerlink" title="Uniform registers"></a>Uniform registers</h3><p>Mali GPU 可以将数据从 API 集统一和统一缓冲区提升到着色器核心寄存器中。然后在每次绘制的基础上加载数据，而不是在每个着色器线程上加载。(比如在shader中Properties声明的常量)</p>
 <h3 id="Stack-spilling"><a href="#Stack-spilling" class="headerlink" title="Stack spilling"></a>Stack spilling</h3><p>对于Valhall 和 Bifrost GPUs，可以看到是否有变量被放置到栈内存中。放置到栈中的内存对于GPU读取是性能消耗较大的。（降低才能提高性能）</p>
 <h3 id="16-bit-arithmetic"><a href="#16-bit-arithmetic" class="headerlink" title="16-bit arithmetic"></a>16-bit arithmetic</h3><p>以 16 位或更低精度执行的算术运算的百分比。数值越高代表shader性能越好。因为使用 mediump 选择的 16 位精度是 32 位精度下的 highp 的两倍。</p>
 <h2 id="Shader信息"><a href="#Shader信息" class="headerlink" title="Shader信息"></a>Shader信息</h2><h3 id="Total-Instruction-Cycles"><a href="#Total-Instruction-Cycles" class="headerlink" title="Total Instruction Cycles"></a><strong>Total Instruction Cycles</strong></h3><p>为程序生成的所有指令的累积执行周期数，与程序控制流无关。</p>
