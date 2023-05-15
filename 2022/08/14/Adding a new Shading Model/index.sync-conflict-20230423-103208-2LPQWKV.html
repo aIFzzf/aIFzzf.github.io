@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<!--浏览器搞笑标题-->
+<script type="text/javascript" src="\js\FunnyTitle.js"></script>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/icon_study_32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon_study_16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文主要记录了UE5如何通过修改源代码添加自己的shadingmodel~">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Adding a new Shading Model in Unreal5">
+<meta property="og:url" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/index.html">
+<meta property="og:site_name" content="风中追风">
+<meta property="og:description" content="本文主要记录了UE5如何通过修改源代码添加自己的shadingmodel~">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%201.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%202.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%203.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%204.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%205.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%206.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%207.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%208.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%209.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%2010.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%2011.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%2012.png">
+<meta property="og:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled%2013.png">
+<meta property="article:published_time" content="2022-08-14T02:57:00.000Z">
+<meta property="article:modified_time" content="2022-09-19T14:38:49.227Z">
+<meta property="article:author" content="NeoZheng">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="Shading">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/Untitled.png">
+
+<link rel="canonical" href="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Adding a new Shading Model in Unreal5 | 风中追风</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><link rel="alternate" href="/atom.xml" title="风中追风" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">风中追风</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/08/14/Adding%20a%20new%20Shading%20Model/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/MyShow.jpg">
+      <meta itemprop="name" content="NeoZheng">
+      <meta itemprop="description" content="潜心技术，努力奋斗">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风中追风">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Adding a new Shading Model in Unreal5
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-14 10:57:00" itemprop="dateCreated datePublished" datetime="2022-08-14T10:57:00+08:00">2022-08-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-09-19 22:38:49" itemprop="dateModified" datetime="2022-09-19T22:38:49+08:00">2022-09-19</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/UnrealEngine/" itemprop="url" rel="index"><span itemprop="name">UnrealEngine</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2022/08/14/Adding%20a%20new%20Shading%20Model/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2022/08/14/Adding%20a%20new%20Shading%20Model/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>11k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>10 分钟</span>
+            </span>
+            <div class="post-description">本文主要记录了UE5如何通过修改源代码添加自己的shadingmodel~</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Adding-a-new-Shading-Model"><a href="#Adding-a-new-Shading-Model" class="headerlink" title="Adding a new Shading Model"></a>Adding a new Shading Model</h1><p>本文主要记录了UE5如何通过修改源代码添加自己的shadingmodel~本文会先梳理下添加ShadingModel所需文件及其相关用途再进行相关介绍，了解过的朋友可直接跳转第二章开始。</p>
+<h1 id="1-文件梳理"><a href="#1-文件梳理" class="headerlink" title="1.文件梳理"></a>1.文件梳理</h1><ol>
+<li>EngineTypes.h ： 存储引擎中类型集合，在这里需要添加ShaderingModel</li>
+<li>MaterialShader.cpp : 负责材质相关属性声明</li>
+<li>HLSLMaterialTranslator.cpp :  负责控制材质C++侧到hlsl侧的数据传递</li>
+<li>ShaderMaterial.h : 声明材质相关定义</li>
+<li>Material.cpp ：Material 相关设置</li>
+<li>ShaderMaterialDerivedHelpers.cpp ：声明处理相关材质parameter</li>
+<li>ShadingCommon.ush  : Shading Common 数据 包括共用的ShadingModel 和 相关函数</li>
+<li>BasePassPixelShader.usf  ：Base Pass Pixel Shader 相关</li>
+<li>ShadingModelsMaterial.ush ： 对GBuffer相关设置</li>
+<li>BasePassCommon.ush ：BasePass相关共用数据声明</li>
+<li>DeferredShadingCommon.ush ：声明GBuffer数据及相关DeferredRendering数据函数</li>
+<li>Definitions.usf ： 定义各种材质的宏</li>
+<li>ClusteredDeferredShadingPixelShader.usf ：Defer Rendering Pixel Shader相关光照处理 </li>
+<li>ShadingModels.ush  :  负责处理不同ShadingModel分类</li>
+</ol>
+<h1 id="2-新增-MaterialShadingModel"><a href="#2-新增-MaterialShadingModel" class="headerlink" title="2.新增 MaterialShadingModel"></a>2.新增 MaterialShadingModel</h1><p>在 <em>EngineTypes.h</em> 中新增自己的ShadingModel类型</p>
+<p><img src="Untitled.png"></p>
+<p>添加后编译即可在ShadingModel中找到自己的ShadingModel</p>
+<p><strong>Note ： 这里需要在MSM_NUM 之前进行添加，否则会报check(InShadingModel &lt; MSM_NUM)检查导致没法Hack</strong></p>
+<p>然后在 <em>MaterialShader.cpp</em> 文件中GetShadingModelString中添加相关声明，Note：名字必须相同</p>
+<p><img src="Untitled%201.png"></p>
+<p>在 <em>HLSLMaterialTranslator.cpp</em> 文件，这里需要找到FHLSLMaterialTranslator::GetMaterialEnvironment 函数并为shadingmodel添加相关defined</p>
+<p><img src="Untitled%202.png"></p>
+<p>在 <em>ShaderMaterial.h</em> 中 FShaderMaterialPropertyDefines 声明映射：</p>
+<p><img src="Untitled%203.png"></p>
+<h1 id="3-开启CustomData-接口"><a href="#3-开启CustomData-接口" class="headerlink" title="3.开启CustomData 接口"></a>3.开启CustomData 接口</h1><p>在 Material.cpp 中找到IsPropertyActive_Internal函数，在switch中找到相关接口，并输入自己新shadingModel。</p>
+<p><img src="Untitled%204.png"></p>
+<p>这一步是为了激活接口在不同ShadingModel中的使用情况。</p>
+<h2 id="2-1-设置CustomData接口名字"><a href="#2-1-设置CustomData接口名字" class="headerlink" title="2.1 设置CustomData接口名字"></a>2.1 设置CustomData接口名字</h2><p>打开 <em>MaterialShared.cpp</em>  ，在GetAttributeOverrideForMaterial函数中case  MP_CustomData0中添加CustomPinNames。该函数控制在Editor中切换不同模式下Pin接口的可用情况。 这里Add第一个是ShadingModel , 第二个是接口展示的名字。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">case</span> MP_CustomData0:	</span><br><span class="line">		CustomPinNames.<span class="built_in">Add</span>(&#123; MSM_ClearCoat, <span class="string">&quot;Clear Coat&quot;</span> &#125;);</span><br><span class="line">		CustomPinNames.<span class="built_in">Add</span>(&#123;MSM_Hair, <span class="string">&quot;Backlit&quot;</span>&#125;);</span><br><span class="line">		CustomPinNames.<span class="built_in">Add</span>(&#123;MSM_Cloth, <span class="string">&quot;Cloth&quot;</span>&#125;);</span><br><span class="line">		CustomPinNames.<span class="built_in">Add</span>(&#123;MSM_Eye, <span class="string">&quot;Iris Mask&quot;</span>&#125;);</span><br><span class="line">		CustomPinNames.<span class="built_in">Add</span>(&#123;MSM_SubsurfaceProfile, <span class="string">&quot;Curvature&quot;</span> &#125;);</span><br><span class="line">		CustomPinNames.<span class="built_in">Add</span>(&#123;MSM_StylizedShadow, <span class="string">&quot;MyStylizedShadow&quot;</span> &#125;);</span><br><span class="line">		<span class="keyword">return</span> FText::<span class="built_in">FromString</span>(<span class="built_in">GetPinNameFromShadingModelField</span>(Material-&gt;<span class="built_in">GetShadingModels</span>(), CustomPinNames, <span class="string">&quot;Custom Data 0&quot;</span>));</span><br></pre></td></tr></table></figure>
+
+<p>在 <em>ShaderMaterialDerivedHelpers.cpp</em> 文件中修改Custom Node 相关映射。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Only some shader models actually need custom data.</span></span><br><span class="line">	Dst.WRITES_CUSTOMDATA_TO_GBUFFER = (Dst.USES_GBUFFER &amp;&amp; (Mat.MATERIAL_SHADINGMODEL_SUBSURFACE || Mat.MATERIAL_SHADINGMODEL_PREINTEGRATED_SKIN || Mat.MATERIAL_SHADINGMODEL_SUBSURFACE_PROFILE || Mat.MATERIAL_SHADINGMODEL_CLEAR_COAT || Mat.MATERIAL_SHADINGMODEL_TWOSIDED_FOLIAGE || Mat.MATERIAL_SHADINGMODEL_HAIR || Mat.MATERIAL_SHADINGMODEL_CLOTH || Mat.MATERIAL_SHADINGMODEL_EYE || Mat.MATERIAL_SHADINGMODEL_STYLIZED_SHAODW));</span><br></pre></td></tr></table></figure>
+
+<h1 id="3-设置-GBuffer-Shading-Model-ID"><a href="#3-设置-GBuffer-Shading-Model-ID" class="headerlink" title="3.设置 GBuffer Shading Model ID"></a>3.设置 GBuffer Shading Model ID</h1><p>打开 <em>ShadingCommone.ush</em> 文件在Shading Model的定义中添加自己的定义</p>
+<p><img src="Untitled%205.png"></p>
+<p>然后在GetShadingModelColor(uint ShadingModelID) 中修改 ShadingModel ID的颜色</p>
+<p><img src="Untitled%206.png"></p>
+<p><img src="Untitled%207.png"></p>
+<p>然后在 BasePassPixelShader.usf 中找到GetMaterialShadingModel 并进行声明 ShadingModel</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> MATERIAL_SHADINGMODEL_STYLIZED_SHADOW</span></span><br><span class="line">	uint ShadingModel = SHADINGMODELID_STYLIZED_SHADOW;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">	uint ShadingModel = <span class="built_in">GetMaterialShadingModel</span>(PixelMaterialInputs);</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-1将CustomData数据写入GBuffer"><a href="#3-1将CustomData数据写入GBuffer" class="headerlink" title="3.1将CustomData数据写入GBuffer"></a>3.1将CustomData数据写入GBuffer</h2><p>接下来打开 <em>ShadingModelsMaterial.ush</em> 。查看<code>SetGBufferForShadingModel</code>函数。该函数控制不同shadingModel写入FGbufferData的数据。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">if</span> MATERIAL_SHADINGMODEL_STYLIZED_SHADOW</span></span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (ShadingModel == SHADINGMODEL_STYLIZED_SHADOW)</span><br><span class="line">	&#123;</span><br><span class="line">		GBuffer.ShadingModelID = SHADINGMODELID_STYLIZED_SHADOW;</span><br><span class="line">		GBuffer.CustomData.x = <span class="built_in">GetMaterialCustomData0</span>(MaterialParameters);</span><br><span class="line">	&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>这里使用GetMaterialCustomData0来获取CustomData0的输入，并将其存放到GBuffer.CustomData中</p>
+<p>然后在 <em>BasePassCommon.ush</em> 中的#define WRITES_CUSTOMDATA_TO_GBUFFER 添加 <code>MATERIAL_SHADINGMODEL_STYLIZED_SHADOW</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#define WRITES_CUSTOMDATA_TO_GBUFFER        (USES_GBUFFER &amp;&amp; (MATERIAL_SHADINGMODEL_SUBSURFACE || MATERIAL_SHADINGMODEL_PREINTEGRATED_SKIN || MATERIAL_SHADINGMODEL_SUBSURFACE_PROFILE || MATERIAL_SHADINGMODEL_CLEAR_COAT || MATERIAL_SHADINGMODEL_TWOSIDED_FOLIAGE || MATERIAL_SHADINGMODEL_HAIR || MATERIAL_SHADINGMODEL_CLOTH || MATERIAL_SHADINGMODEL_EYE || SHADINGMODELID_STYLIZED_SHADOW))</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="4-修改-CustomGBufferData-数据"><a href="#4-修改-CustomGBufferData-数据" class="headerlink" title="4.修改 CustomGBufferData 数据"></a>4.修改 CustomGBufferData 数据</h1><p><strong>DeferredShadingCommon.ush</strong> 修改<strong>HasCustomGBufferData</strong>函数，支持<strong>SHADINGMODELID_STYLIZED_SHADOW</strong>写入</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">HasCustomGBufferData</span><span class="params">(<span class="type">int</span> ShadingModelID)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> ShadingModelID == SHADINGMODELID_SUBSURFACE</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_PREINTEGRATED_SKIN</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_CLEAR_COAT</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_SUBSURFACE_PROFILE</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_TWOSIDED_FOLIAGE</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_HAIR</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_CLOTH</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_EYE</span><br><span class="line">    || ShadingModelID == SHADINGMODELID_STYLIZED_SHADOW;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="5-其他声明"><a href="#5-其他声明" class="headerlink" title="5.其他声明"></a>5.其他声明</h1><p>打开 ShaderGenerationUtil.cpp 文件，找到ApplyFetchEnvironment 并在其中声明 Shader Compile </p>
+<p><img src="Untitled%208.png"></p>
+<p>同时到 DetermineUsedMaterialSlots 函数中添加对象slot</p>
+<p><img src="Untitled%209.png"></p>
+<p>然后在 Definitions.usf 中声明</p>
+<p><img src="Untitled%2010.png"></p>
+<h1 id="6-光照修改"><a href="#6-光照修改" class="headerlink" title="6.光照修改"></a>6.光照修改</h1><p>从这里开始计算光照部分的修改：</p>
+<h2 id="6-1获取光源数据"><a href="#6-1获取光源数据" class="headerlink" title="6.1获取光源数据"></a>6.1获取光源数据</h2><p>在 <code>Engine\Shaders\Private\ClusteredDeferredShadingPixelShader.usf</code> 的 <code>ClusteredShadingPixelShader</code> 函数中添加我们的着色模型。</p>
+<p><img src="Untitled%2011.png"></p>
+<h2 id="6-2着色计算"><a href="#6-2着色计算" class="headerlink" title="6.2着色计算"></a>6.2着色计算</h2><p>打开 ShadingModels.ush 在其中的IntegrateBxDF 函数中添加相关着色类型：</p>
+<p><img src="Untitled%2012.png"></p>
+<p>接下来是StylizedShadowBxDF 相关渲染代码，这里直接参考dalao文章</p>
+<ul>
+<li>code  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">FDirectLighting <span class="title">StylizedShadowBxDF</span><span class="params">(FGBufferData GBuffer, half3 N, half3 V, half3 L, <span class="type">float</span> Falloff, <span class="type">float</span> NoL, FAreaLight AreaLight, FShadowTerms Shadow)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">if</span> GBUFFER_HAS_TANGENT</span></span><br><span class="line">	half3 X = GBuffer.WorldTangent;</span><br><span class="line">	half3 Y = <span class="built_in">normalize</span>(<span class="built_in">cross</span>(N, X));</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">	half3 X = <span class="number">0</span>;</span><br><span class="line">	half3 Y = <span class="number">0</span>;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">	</span><br><span class="line">	BxDFContext Context;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">Init</span>(Context, N, X, Y, V, L);</span><br><span class="line">	</span><br><span class="line">	<span class="built_in">SphereMaxNoH</span>(Context, AreaLight.SphereSinAlpha, <span class="literal">true</span>);</span><br><span class="line">	Context.NoV = <span class="built_in">saturate</span>(<span class="built_in">abs</span>(Context.NoV) + <span class="number">0.00001</span>);</span><br><span class="line"></span><br><span class="line">	<span class="type">float</span> SpecularOffset = <span class="number">0.5</span>;</span><br><span class="line">	<span class="type">float</span> SpecularRange = GBuffer.CustomData.x;</span><br><span class="line"></span><br><span class="line">	float3 ShadowColor = <span class="number">0</span>;</span><br><span class="line">	</span><br><span class="line">	ShadowColor = GBuffer.DiffuseColor * ShadowColor;</span><br><span class="line">	<span class="type">float</span> offset = GBuffer.CustomData.y;</span><br><span class="line">	<span class="type">float</span> SoftScatterStrength = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	offset = offset * <span class="number">2</span> - <span class="number">1</span>;</span><br><span class="line">	half3 H = <span class="built_in">normalize</span>(V + L);</span><br><span class="line">	<span class="type">float</span> NoH = <span class="built_in">saturate</span>(<span class="built_in">dot</span>(N, H));</span><br><span class="line">	NoL = (<span class="built_in">dot</span>(N, L) + <span class="number">1</span>) / <span class="number">2</span>; <span class="comment">// overwrite NoL To Get more range out Of it</span></span><br><span class="line">	half NoLOffset = <span class="built_in">saturate</span>(NoL + offset);</span><br><span class="line">	</span><br><span class="line">	FDirectLighting Lighting;</span><br><span class="line">	Lighting.Diffuse = AreaLight.FalloffColor * (<span class="built_in">smoothstep</span>(<span class="number">0</span>, <span class="number">1</span>, NoLOffset) * Falloff) * <span class="built_in">Diffuse_Lambert</span>(GBuffer.DiffuseColor) * <span class="number">2.2</span>;</span><br><span class="line">	<span class="type">float</span> InScatter = <span class="built_in">pow</span>(<span class="built_in">saturate</span>(<span class="built_in">dot</span>(L, -V)), <span class="number">12</span>) * <span class="built_in">lerp</span>(<span class="number">3</span>, <span class="number">0.1F</span>, <span class="number">1</span>);</span><br><span class="line">	<span class="type">float</span> NormalContribution = <span class="built_in">saturate</span>(<span class="built_in">dot</span>(N, H));</span><br><span class="line">	<span class="type">float</span> BackScatter = GBuffer.GBufferAO * NormalContribution / (PI * <span class="number">2</span>);</span><br><span class="line">	Lighting.Specular = <span class="built_in">ToonStep</span>(SpecularRange, (<span class="built_in">saturate</span>(<span class="built_in">D_GGX</span>(SpecularOffset, NoH)))) * (AreaLight.FalloffColor * GBuffer.SpecularColor * Falloff * <span class="number">8</span>);</span><br><span class="line">	float3 TransmissionSoft = AreaLight.FalloffColor * (Falloff * <span class="built_in">lerp</span>(BackScatter, <span class="number">1</span>, InScatter)) * ShadowColor * SoftScatterStrength;</span><br><span class="line">	float3 ShadowLightener = <span class="number">0</span>;</span><br><span class="line">	ShadowLightener = (<span class="built_in">saturate</span>(<span class="built_in">smoothstep</span>(<span class="number">0</span>, <span class="number">1</span>, <span class="built_in">saturate</span>(<span class="number">1</span> - NoLOffset))) * ShadowColor * <span class="number">0.1</span>);</span><br><span class="line">	</span><br><span class="line">	Lighting.Transmission = (ShadowLightener + TransmissionSoft) * Falloff;</span><br><span class="line">	<span class="keyword">return</span> Lighting;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>打开<em>DeferredLightingCommon.ush</em> ，并找到<code>GetDynamicLighting</code>函数，在其中的 GetDynamicLightingSplit，添加相关case 进行分类</p>
+<ul>
+<li>code  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/** Calculates lighting for a given position, normal, etc with a fully featured lighting model designed for quality. */</span></span><br><span class="line"><span class="function">FDeferredLightingSplit <span class="title">GetDynamicLightingSplit</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">	float3 TranslatedWorldPosition, float3 CameraVector, FGBufferData GBuffer, <span class="type">float</span> AmbientOcclusion, uint ShadingModelID, </span></span></span><br><span class="line"><span class="params"><span class="function">	FDeferredLightData LightData, float4 LightAttenuation, <span class="type">float</span> Dither, uint2 SVPos, FRectTexture SourceTexture,</span></span></span><br><span class="line"><span class="params"><span class="function">	inout <span class="type">float</span> SurfaceShadow)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	FLightAccumulator LightAccumulator = (FLightAccumulator)<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	float3 V = -CameraVector;</span><br><span class="line">	float3 N = GBuffer.WorldNormal;</span><br><span class="line">	<span class="function">BRANCH <span class="title">if</span><span class="params">( GBuffer.ShadingModelID == SHADINGMODELID_CLEAR_COAT &amp;&amp; CLEAR_COAT_BOTTOM_NORMAL)</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="type">const</span> float2 oct1 = ((<span class="built_in">float2</span>(GBuffer.CustomData.a, GBuffer.CustomData.z) * <span class="number">2</span>) - (<span class="number">256.0</span>/<span class="number">255.0</span>)) + <span class="built_in">UnitVectorToOctahedron</span>(GBuffer.WorldNormal);</span><br><span class="line">		N = <span class="built_in">OctahedronToUnitVector</span>(oct1);			</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	float3 L = LightData.Direction;	<span class="comment">// Already normalized</span></span><br><span class="line">	float3 ToLight = L;</span><br><span class="line">	</span><br><span class="line">	<span class="type">float</span> LightMask = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">if</span> (LightData.bRadialLight)</span><br><span class="line">	&#123;</span><br><span class="line">		LightMask = <span class="built_in">GetLocalLightAttenuation</span>( TranslatedWorldPosition, LightData, ToLight, L );</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	LightAccumulator.EstimatedCost += <span class="number">0.3f</span>;		<span class="comment">// running the PixelShader at all has a cost</span></span><br><span class="line">	</span><br><span class="line">	<span class="function">BRANCH</span></span><br><span class="line"><span class="function">	<span class="title">if</span><span class="params">( LightMask &gt; <span class="number">0</span> )</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		FShadowTerms Shadow;</span><br><span class="line">		Shadow.SurfaceShadow = AmbientOcclusion;</span><br><span class="line">		Shadow.TransmissionShadow = <span class="number">1</span>;</span><br><span class="line">		Shadow.TransmissionThickness = <span class="number">1</span>;</span><br><span class="line">		Shadow.HairTransmittance.OpaqueVisibility = <span class="number">1</span>;</span><br><span class="line">		<span class="type">const</span> <span class="type">float</span> ContactShadowOpacity = GBuffer.CustomData.a;</span><br><span class="line">		<span class="built_in">GetShadowTerms</span>(GBuffer.Depth, GBuffer.PrecomputedShadowFactors, GBuffer.ShadingModelID, ContactShadowOpacity,</span><br><span class="line">			LightData, TranslatedWorldPosition, L, LightAttenuation, Dither, Shadow);</span><br><span class="line">		SurfaceShadow = Shadow.SurfaceShadow;</span><br><span class="line"></span><br><span class="line">		LightAccumulator.EstimatedCost += <span class="number">0.3f</span>;		<span class="comment">// add the cost of getting the shadow terms</span></span><br><span class="line"></span><br><span class="line">		<span class="function">BRANCH</span></span><br><span class="line"><span class="function">		<span class="title">if</span><span class="params">( Shadow.SurfaceShadow + Shadow.TransmissionShadow &gt; <span class="number">0</span> )</span></span></span><br><span class="line"><span class="function">		</span>&#123;</span><br><span class="line">			<span class="type">const</span> <span class="type">bool</span> bNeedsSeparateSubsurfaceLightAccumulation = <span class="built_in">UseSubsurfaceProfile</span>(GBuffer.ShadingModelID);</span><br><span class="line">			float3 LightColor = LightData.Color;</span><br><span class="line"></span><br><span class="line">			<span class="comment">// ****************** start here  ********************* //</span></span><br><span class="line">			<span class="comment">// STYLIZEDSHADOW SHADING </span></span><br><span class="line">			float3 Attenuation = <span class="number">1</span>;</span><br><span class="line">			<span class="function">BRANCH</span></span><br><span class="line"><span class="function">			<span class="title">if</span> <span class="params">(GBuffer.ShadingModelID == SHADINGMODELID_STYLIZED_SHADOW)</span></span></span><br><span class="line"><span class="function">			</span>&#123;</span><br><span class="line">				 </span><br><span class="line">				  <span class="type">float</span> offset = GBuffer.CustomData.x;</span><br><span class="line">				  <span class="type">float</span> TerminatorRange = <span class="built_in">saturate</span>(GBuffer.Roughness - <span class="number">0.5</span>);</span><br><span class="line">  </span><br><span class="line">				  offset = offset * <span class="number">2</span> - <span class="number">1</span>;</span><br><span class="line">  </span><br><span class="line">				  <span class="function">BRANCH</span></span><br><span class="line"><span class="function">				  <span class="title">if</span> <span class="params">(offset &gt;= <span class="number">1</span>)</span></span></span><br><span class="line"><span class="function">				  </span>&#123;</span><br><span class="line">					Attenuation = <span class="number">1</span>;</span><br><span class="line">				  &#125;</span><br><span class="line">				  <span class="keyword">else</span></span><br><span class="line">				  &#123;</span><br><span class="line">					<span class="type">float</span> NoL = (<span class="built_in">dot</span>(N, L) + <span class="number">1</span>) / <span class="number">2</span>;</span><br><span class="line">					<span class="type">float</span> NoLOffset = <span class="built_in">saturate</span>(NoL + offset);</span><br><span class="line">					<span class="type">float</span> LightAttenuationOffset = <span class="built_in">saturate</span>( Shadow.SurfaceShadow + offset);</span><br><span class="line">					<span class="type">float</span> ToonSurfaceShadow = <span class="built_in">smoothstep</span>(<span class="number">0.5</span> - TerminatorRange, <span class="number">0.5</span> + TerminatorRange, LightAttenuationOffset);</span><br><span class="line"></span><br><span class="line">					Attenuation = <span class="built_in">smoothstep</span>(<span class="number">0.5</span> - TerminatorRange, <span class="number">0.5</span> + TerminatorRange, NoLOffset) * ToonSurfaceShadow;</span><br><span class="line">				  &#125;</span><br><span class="line">			&#125;</span><br><span class="line">		<span class="comment">// ****************** end here  ********************* //</span></span><br><span class="line">		<span class="meta">#<span class="keyword">if</span> NON_DIRECTIONAL_DIRECT_LIGHTING</span></span><br><span class="line">			<span class="type">float</span> Lighting;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span>( LightData.bRectLight )</span><br><span class="line">			&#123;</span><br><span class="line">				FRect Rect = <span class="built_in">GetRect</span>( ToLight, LightData );</span><br><span class="line"></span><br><span class="line">				Lighting = <span class="built_in">IntegrateLight</span>( Rect, SourceTexture);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">			&#123;</span><br><span class="line">				FCapsuleLight Capsule = <span class="built_in">GetCapsule</span>( ToLight, LightData );</span><br><span class="line"></span><br><span class="line">				Lighting = <span class="built_in">IntegrateLight</span>( Capsule, LightData.bInverseSquared );</span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			float3 LightingDiffuse = <span class="built_in">Diffuse_Lambert</span>( GBuffer.DiffuseColor ) * Lighting;</span><br><span class="line">		<span class="comment">// ****************** start here  ********************* //</span></span><br><span class="line">			<span class="built_in">LightAccumulator_AddSplit</span>(LightAccumulator, LightingDiffuse, <span class="number">0.0f</span>, <span class="number">0</span>, LightColor * LightMask * Shadow.SurfaceShadow * Attenuation, bNeedsSeparateSubsurfaceLightAccumulation);</span><br><span class="line">		<span class="comment">// ****************** end here  ********************* //</span></span><br><span class="line">		<span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">			FDirectLighting Lighting;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (LightData.bRectLight)</span><br><span class="line">			&#123;</span><br><span class="line">				FRect Rect = <span class="built_in">GetRect</span>( ToLight, LightData );</span><br><span class="line"></span><br><span class="line">				<span class="meta">#<span class="keyword">if</span> REFERENCE_QUALITY</span></span><br><span class="line">					Lighting = <span class="built_in">IntegrateBxDF</span>( GBuffer, N, V, Rect, Shadow, SourceTexture, SVPos );</span><br><span class="line">				<span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">					Lighting = <span class="built_in">IntegrateBxDF</span>( GBuffer, N, V, Rect, Shadow, SourceTexture);</span><br><span class="line">				<span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">else</span></span><br><span class="line">			&#123;</span><br><span class="line">				FCapsuleLight Capsule = <span class="built_in">GetCapsule</span>( ToLight, LightData );</span><br><span class="line"></span><br><span class="line">				<span class="meta">#<span class="keyword">if</span> REFERENCE_QUALITY</span></span><br><span class="line">					Lighting = <span class="built_in">IntegrateBxDF</span>( GBuffer, N, V, Capsule, Shadow, SVPos );</span><br><span class="line">				<span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">					Lighting = <span class="built_in">IntegrateBxDF</span>( GBuffer, N, V, Capsule, Shadow, LightData.bInverseSquared );</span><br><span class="line">				<span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">			&#125;</span><br><span class="line"></span><br><span class="line">			Lighting.Specular *= LightData.SpecularScale;</span><br><span class="line">			<span class="comment">// ****************** start here  ********************* //</span></span><br><span class="line">			<span class="built_in">LightAccumulator_AddSplit</span>( LightAccumulator, Lighting.Diffuse, Lighting.Specular, Lighting.Diffuse, LightColor * LightMask * Shadow.SurfaceShadow  * Attenuation, bNeedsSeparateSubsurfaceLightAccumulation );</span><br><span class="line">				</span><br><span class="line">			<span class="built_in">LightAccumulator_AddSplit</span>( LightAccumulator, Lighting.Transmission, <span class="number">0.0f</span>, Lighting.Transmission, LightColor * LightMask * Shadow.TransmissionShadow, bNeedsSeparateSubsurfaceLightAccumulation );</span><br><span class="line">			<span class="comment">// ****************** end here  ********************* //</span></span><br><span class="line"></span><br><span class="line">			LightAccumulator.EstimatedCost += <span class="number">0.4f</span>;		<span class="comment">// add the cost of the lighting computations (should sum up to 1 form one light)	</span></span><br><span class="line">			</span><br><span class="line">		<span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="built_in">LightAccumulator_GetResultSplit</span>(LightAccumulator);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>编译后即可看到效果</p>
+<p><img src="Untitled%2013.png"></p>
+<h1 id="7-总结"><a href="#7-总结" class="headerlink" title="7. 总结"></a>7. 总结</h1><p>初步实现自定义ShadingModel材质渲染。后续可做进一步开发~</p>
+<h1 id="8-参考"><a href="#8-参考" class="headerlink" title="8.参考"></a>8.参考</h1><p><a target="_blank" rel="noopener" href="https://medium.com/@lordned/ue4-rendering-part-6-adding-a-new-shading-model-e2972b40d72d">Unreal Engine 4 Rendering Part 6: Adding a new Shading Model</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/Eragon-Brisingr/ToonShader">GitHub - Eragon-Brisingr/ToonShader: cartoon plugins for unreal engine</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_33967521/article/details/106949986">在UE4中创建新的Shading Model_「已注销」的博客-CSDN博客</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/404857208">UE5自定义着色模型 Unreal Engine 5 custom Shading Model</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/Shading/" rel="tag"># Shading</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/07/07/pycharm%20%E9%85%8D%E7%BD%AEunreal%20python%20%E7%8E%AF%E5%A2%83/" rel="prev" title="pycharm 配置unreal python 环境">
+      <i class="fa fa-chevron-left"></i> pycharm 配置unreal python 环境
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/" rel="next" title="Creating a new GBuffer in Unreal5">
+      Creating a new GBuffer in Unreal5 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Adding-a-new-Shading-Model"><span class="nav-text">Adding a new Shading Model</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%96%87%E4%BB%B6%E6%A2%B3%E7%90%86"><span class="nav-text">1.文件梳理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E6%96%B0%E5%A2%9E-MaterialShadingModel"><span class="nav-text">2.新增 MaterialShadingModel</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E5%BC%80%E5%90%AFCustomData-%E6%8E%A5%E5%8F%A3"><span class="nav-text">3.开启CustomData 接口</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-%E8%AE%BE%E7%BD%AECustomData%E6%8E%A5%E5%8F%A3%E5%90%8D%E5%AD%97"><span class="nav-text">2.1 设置CustomData接口名字</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E8%AE%BE%E7%BD%AE-GBuffer-Shading-Model-ID"><span class="nav-text">3.设置 GBuffer Shading Model ID</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1%E5%B0%86CustomData%E6%95%B0%E6%8D%AE%E5%86%99%E5%85%A5GBuffer"><span class="nav-text">3.1将CustomData数据写入GBuffer</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E4%BF%AE%E6%94%B9-CustomGBufferData-%E6%95%B0%E6%8D%AE"><span class="nav-text">4.修改 CustomGBufferData 数据</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E5%85%B6%E4%BB%96%E5%A3%B0%E6%98%8E"><span class="nav-text">5.其他声明</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-%E5%85%89%E7%85%A7%E4%BF%AE%E6%94%B9"><span class="nav-text">6.光照修改</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1%E8%8E%B7%E5%8F%96%E5%85%89%E6%BA%90%E6%95%B0%E6%8D%AE"><span class="nav-text">6.1获取光源数据</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-2%E7%9D%80%E8%89%B2%E8%AE%A1%E7%AE%97"><span class="nav-text">6.2着色计算</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-%E6%80%BB%E7%BB%93"><span class="nav-text">7. 总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#8-%E5%8F%82%E8%80%83"><span class="nav-text">8.参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NeoZheng"
+      src="/images/MyShow.jpg">
+  <p class="site-author-name" itemprop="name">NeoZheng</p>
+  <div class="site-description" itemprop="description">潜心技术，努力奋斗</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/aIFzzf" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;aIFzzf" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fzzf-90-50" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fzzf-90-50" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>Zhihu</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy; 2021-12 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NeoZheng</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">70k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:04</span>
+</div>
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : true,
+      appId      : 'NMN4QIvjAh5qJ5q3mziedsgN-gzGzoHsz',
+      appKey     : 'rIJIzKcDCj5iPy38T3RXtSa2',
+      placeholder: "Comments welcome",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

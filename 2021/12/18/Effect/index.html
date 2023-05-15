@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<!--浏览器搞笑标题-->
+<script type="text/javascript" src="\js\FunnyTitle.js"></script>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/icon_study_32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon_study_16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文为拳头官方发布的特效制作指南翻译。如有错误，欢迎指正。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effect">
+<meta property="og:url" content="http://example.com/2021/12/18/Effect/index.html">
+<meta property="og:site_name" content="风中追风">
+<meta property="og:description" content="本文为拳头官方发布的特效制作指南翻译。如有错误，欢迎指正。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/1.png">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/2.png">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/3.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/4.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/5.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/6.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/7.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/8.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/9.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/10.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/11.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/12.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/13.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/14.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/15.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/16.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/17.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/18.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/19.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/20.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/21.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/22.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/23.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/24.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/25.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/Q1.gif">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/26.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/E1.gif">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/27.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/A1.gif">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/W1.gif">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/Q2.gif">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/28.jpg">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/W2.gif">
+<meta property="og:image" content="http://example.com/2021/12/18/Effect/29.jpg">
+<meta property="article:published_time" content="2021-12-17T16:01:09.000Z">
+<meta property="article:modified_time" content="2021-12-17T16:20:04.478Z">
+<meta property="article:author" content="NeoZheng">
+<meta property="article:tag" content="特效">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/12/18/Effect/1.png">
+
+<link rel="canonical" href="http://example.com/2021/12/18/Effect/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Effect | 风中追风</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><link rel="alternate" href="/atom.xml" title="风中追风" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">风中追风</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/12/18/Effect/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/MyShow.jpg">
+      <meta itemprop="name" content="NeoZheng">
+      <meta itemprop="description" content="潜心技术，努力奋斗">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风中追风">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Effect
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-12-18 00:01:09 / 修改时间：00:20:04" itemprop="dateCreated datePublished" datetime="2021-12-18T00:01:09+08:00">2021-12-18</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%89%B9%E6%95%88/" itemprop="url" rel="index"><span itemprop="name">特效</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2021/12/18/Effect/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2021/12/18/Effect/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+            <div class="post-description">本文为拳头官方发布的特效制作指南翻译。如有错误，欢迎指正。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="1.png"></p>
+<p><img src="2.png"></p>
+<ol>
+<li>概述：我们创造引人注目的视觉效果的理念和目标</li>
+<li>游戏玩法：终点部分，描绘游戏空间及重要程度</li>
+<li>亮度：确定和使用亮度范围</li>
+<li>色彩：色彩关系、色调使用、饱和度水平和调色板距离</li>
+<li>造型：形状语言、轮廓和运动幻象</li>
+<li>节奏：传达游戏性，动画要体现精准位移，减少特效噪声</li>
+<li>联系我们……</li>
+</ol>
+<h1 id="一、概述"><a href="#一、概述" class="headerlink" title="一、概述"></a>一、概述</h1><p><img src="3.jpg"></p>
+<p><strong>我们的理念</strong></p>
+<p>无论是魔法、火焰、烟雾、爆炸还是偶尔的闪光，《英雄联盟》特效部门致力于将所有这些元素变为现实。他们了解游戏设计，并将艺术作品转化为“符文之地”这神奇世界的视觉效果。多年来，已形成了统一的视觉风格，并设定了一组核心目标。</p>
+<p><strong>特效目标</strong></p>
+<ul>
+<li>为游戏提供清晰的视觉效果</li>
+<li>减少视觉混乱</li>
+<li>特效能契合英雄主题</li>
+<li>创造出让玩家惊喜的特效</li>
+</ul>
+<h1 id="二、游戏玩法"><a href="#二、游戏玩法" class="headerlink" title="二、游戏玩法"></a>二、游戏玩法</h1><p><img src="4.jpg"></p>
+<p><strong>通过以下方式定义游戏性：创造聚焦区域</strong></p>
+<p>为获取有说服力、可读性视觉体验，我们为创造的每个体验定义了一系列的<strong>主要和次要元素。</strong>作为我们指路明灯，确保每个特效都能通过<strong>强调特效的焦点来提升游戏清晰度</strong>，同时<strong>减少整体视觉噪音</strong>。</p>
+<p>主要元素规则</p>
+<ul>
+<li>特效交点</li>
+<li>是法术的主要目的</li>
+<li>特效清晰、准确传达了游戏的玩法</li>
+</ul>
+<p>次要元素规则</p>
+<ul>
+<li><p>该元素增强了英雄或法术的主题性</p>
+</li>
+<li><p>通过提升亮度和饱和度来强化主要元素</p>
+</li>
+<li><p>利用多种色调和更宽的饱和度范围来增强特效的整体视觉吸引力</p>
+<blockquote>
+<p>源计划 蕾欧娜的W<br>W 会在周围形成一个爆照的盾牌<br><strong>主要元素</strong>是日蚀法术的<strong>边界</strong>：为躲开爆炸，玩家必须能轻易识别特效半径<br><strong>次要效果</strong>是圆圈内的微弱电流，用于<strong>强化</strong>源计划皮肤主题</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>焦点区域</strong></p>
+<p>关于如何定义主要和次要元素的指南</p>
+<p>主要元素</p>
+<ul>
+<li>高亮度</li>
+<li>亮度或色调上强对比</li>
+<li>清晰的剪影</li>
+<li>高不透明度</li>
+<li>强烈的造型</li>
+<li>剧烈的运动</li>
+</ul>
+<p>次要元素</p>
+<ul>
+<li>低亮度</li>
+<li>小尺寸</li>
+<li>模糊的轮廓</li>
+<li>低不透明度</li>
+<li>简洁的形状</li>
+<li>微妙的运动</li>
+</ul>
+<p><img src="5.jpg"></p>
+<p><strong>准确表达特效区域</strong></p>
+<p>清晰度对竞技体验来说是最重要的，因为它是用来玩和看的。提供准确的游戏表现，使玩家和观众能够清楚地理解和预测游戏。</p>
+<blockquote>
+<p><strong>不准确的描绘</strong><br>提莫蘑菇爆炸半径为600个单位，然而，该蘑菇爆炸的特效只覆盖其半径的一半，并且缺少一个范围指示器</p>
+</blockquote>
+<blockquote>
+<p><strong>准确描述</strong><br>欧米茄小队提莫使用微妙的环来表示AOE，而爆炸是为了准确传递特效范围</p>
+</blockquote>
+<p><img src="6.jpg"></p>
+<p><strong>准确表达特效的命中框</strong></p>
+<p>清晰度对竞技体验来说是最重要的，因为它是用来玩和看的。提供准确的游戏表现，使玩家和观众能够清楚地理解和预测游戏。</p>
+<blockquote>
+<p><strong>不准确的描绘</strong><br>琴女的旧版大招覆盖范围比实际范围更大，当琴女大招没有命中目标，但特效却覆盖到目标时，玩家会困惑</p>
+</blockquote>
+<blockquote>
+<p><strong>准确描述</strong><br>DJ琴女大招清楚显示了矩形的AOE，该特效贴在地面上显示，相机角度不会影响其位置</p>
+</blockquote>
+<p><img src="7.jpg"></p>
+<p><strong>重要程度</strong></p>
+<p>一个特效的视觉呈现应该向玩家和观众传达其重要程度</p>
+<pre><code>  eg：if 一个英雄的基本攻击特效看起来与大招重要性相同，就会使玩家或观众感到困惑，同时也让人对大招效果不太满意。
+
+  为了确定这些重要程度，我们将特效的特定外观映射为法术的能量峰值，这确保了所有特效的构成与功能相匹配。
+
+  在确定一个特效的重要程度时，我们评估3个核心部分：
+</code></pre>
+<ul>
+<li>可读性：玩家和观众能够立即理解一个特效的目的</li>
+<li>重点突出：特效引导玩家关注重要的法术，同时减少团战时视觉噪音</li>
+<li>重要性的尺寸：每个特效都应与它游戏玩法的重要程度相匹配</li>
+</ul>
+<blockquote>
+<p><strong>拉克丝的普攻和大招</strong><br>因为拉克丝大招的作用比普攻大很多，大招应该永远更显眼。</p>
+</blockquote>
+<p><img src="8.jpg"></p>
+<p><strong>重要性的尺度</strong></p>
+<p>重要性的尺度可以通过以下属性控制：大小、形状、节奏、亮度、饱和度和不透明度。</p>
+<p>每个粒子的重要性应该由特效对玩法的影响程度来决定，如下图所示：</p>
+<blockquote>
+<p><strong>休闲粒子</strong><br>-高亮度<br>-清晰的剪影<br>-隐晦的形状<br>-微妙的运动</p>
+</blockquote>
+<blockquote>
+<p><strong>普攻</strong><br>-小尺寸</p>
+</blockquote>
+<blockquote>
+<p><strong>防御性法术</strong><br>-低饱和度<br>-低不透明度<br>-隐晦的形状<br>-微妙的运动</p>
+</blockquote>
+<blockquote>
+<p><strong>伤害性法术</strong><br>-高饱和度<br>-高不透明度<br>-清晰的剪影</p>
+</blockquote>
+<blockquote>
+<p><strong>改变游戏规则</strong><br>-高饱和度<br>-高不透明度<br>-高亮度<br>-清晰的剪影<br>-剧烈的运动</p>
+</blockquote>
+<blockquote>
+<p><strong>大招</strong><br>-最高的饱和度<br>-最高的不透明度<br>-最高的亮度<br>-大尺寸<br>-有冲击力的动画</p>
+</blockquote>
+<h1 id="三、亮度"><a href="#三、亮度" class="headerlink" title="三、亮度"></a>三、亮度</h1><p><img src="9.jpg"></p>
+<p><strong>如何确定亮度范围</strong></p>
+<p>操纵亮度范围是传达魔法效果的关键。为恰当体现出每个特效的能量水平，所有魔法和能量都有不同程度的亮度范围和不透明度。</p>
+<p> 为确保它们贯穿始终整个游戏，我们在制作特效要坚持一些准则。</p>
+<p>特效亮度范围只能</p>
+<ul>
+<li>更高的亮度范围吸引更多的注意力</li>
+<li>对比可以营造一个清晰的特效范围</li>
+<li>避免使用100%或0%的亮度，因为可能会被场景或UI混淆</li>
+</ul>
+<blockquote>
+<p><strong>各模块的亮度范围</strong><br>-UI亮度范围<br>-角色亮度范围<br>-场景亮度范围<br>-特效亮度范围</p>
+</blockquote>
+<p><img src="10.jpg"></p>
+<p><strong>情景中亮度范围</strong></p>
+<blockquote>
+<p>场景亮度范围<br>特效亮度范围<br>角色高亮范围<br>UI亮度范围</p>
+</blockquote>
+<p><img src="11.jpg"></p>
+<p><strong>使用适当亮度范围增强魔法效果</strong></p>
+<p>eg：奥术大师炸弹人的弹跳炸弹，提高魔法特效中心的亮度，可以让特效看起来更加强大和神奇。</p>
+<blockquote>
+<p><strong>不准确的描述</strong><br>特效没有视觉中心，很难注意到该特效在哪里有最大伤害，因为它与地面相同视觉感</p>
+</blockquote>
+<blockquote>
+<p><strong>准确的描述</strong><br>通过提高炸弹的中心，使特效有清晰的焦点，让玩家在团战中更容易注意到该法术。</p>
+</blockquote>
+<p><img src="12.jpg"></p>
+<p><strong>利用光照增强魔法效果</strong></p>
+<p>光照是体现一个法术神奇特性的关键，通过添加一个简单的光晕来提高特效，可以大大增强魔法效果的表现。</p>
+<blockquote>
+<p><strong>不准确的描绘</strong><br>没有使用光照效果，特效失去很多生命力和神奇的感觉</p>
+</blockquote>
+<blockquote>
+<p><strong>准确的描绘</strong><br>用了辉光和光照，特效就有了更多的生命力，有助于传递特效的运动、方向和持续时间</p>
+</blockquote>
+<p><img src="13.jpg"></p>
+<p><strong>利用亮度范围创建一个焦点区域</strong></p>
+<p>视觉中兴是由对比营造出来的，当我们制作游戏特效时，亮度范围为是我们营造对比最有力的盟友之一。当特效没有体现出我们想要的理想焦点区域时，手动增加深色背景可以帮助改善效果，但该做法需要谨慎使用。if使用过渡，这些特效会在团战时与其他特效形成对比。</p>
+<blockquote>
+<p><strong>准确描绘</strong><br>暗星维鲁斯的Q和苍穹之光维克兹的W是很好的粒子，使用适当的对比来吸引焦点。</p>
+</blockquote>
+<blockquote>
+<p>高对比度 - 高焦点<br>低对比度 - 低焦点<br>高对比度 - 高焦点</p>
+</blockquote>
+<h1 id="四、色彩"><a href="#四、色彩" class="headerlink" title="四、色彩"></a>四、色彩</h1><p><img src="14.jpg"></p>
+<p><strong>色彩对于特效的重要性</strong></p>
+<p>色彩对确定法术的主题起巨大的作用。在本节中，我们将强调适当使用饱和度、色彩关系和《英雄联盟》中几个主题的基础色板。</p>
+<p>特效饱和度范围指南</p>
+<ul>
+<li>更高的饱和度范围吸引更多的注意力</li>
+<li>对比可以营造一个清晰的特效范围</li>
+<li>避免使用100%或0%的饱和度，它可能会被场景或UI混淆</li>
+</ul>
+<blockquote>
+<p>各模块的饱和度范围</p>
+<ul>
+<li>UI饱和度范围</li>
+<li>角色饱和度范围</li>
+<li>场景饱和度范围</li>
+<li>特效饱和度范围</li>
+</ul>
+</blockquote>
+<p><img src="15.jpg"></p>
+<p><strong>英雄和自身特效之间的色彩关系</strong></p>
+<p>英雄的特效比模型有更高更广的亮度范围和饱和度范围</p>
+<blockquote>
+<p><strong>钢铁之翼 凯尔</strong><br>模型色板（外），特效色板（内）</p>
+</blockquote>
+<blockquote>
+<p><strong>屠龙勇士 布隆</strong><br>模型色板（外），特效色板（内）</p>
+</blockquote>
+<p><img src="16.jpg"></p>
+<p><strong>补色和色调在特效中的应用</strong></p>
+<p>最好使用同色系的颜色。当一个特效中有两个互补色时，其中一个颜色必须作为辅助色。</p>
+<p>当两个相反的颜色出现在同一个特效中，这些颜色会争抢成为第一要素（即使亮度级别不同）</p>
+<blockquote>
+<p><strong>补色例子</strong></p>
+</blockquote>
+<blockquote>
+<p><strong>不准确的描述</strong><br>露露的盾牌特效使用高不透明度和高饱和度的互补色，造成严重噪音<br>ps：这些颜色争先成为第一要素，和我们设计的额焦点产生冲突。</p>
+</blockquote>
+<blockquote>
+<p><strong>准确的描述</strong><br>巴德的Q使用低饱和度、低透明度的紫色，和亮黄色平衡。<br>在特效的次要部分使用补色，给特效增加了一种漂亮的丰富性，且没有冲突</p>
+</blockquote>
+<p><img src="17.jpg"></p>
+<p><strong>《英雄联盟》中常见法术的色板</strong></p>
+<p>此处收集了游戏中法术最常用的色板</p>
+<blockquote>
+<p>毒 虚空 治疗</p>
+</blockquote>
+<p><img src="18.jpg"></p>
+<blockquote>
+<p>冰霜 弹药 神秘</p>
+</blockquote>
+<p><img src="19.jpg"></p>
+<blockquote>
+<p>自然 暗影岛 天赐</p>
+</blockquote>
+<p><img src="20.jpg"></p>
+<blockquote>
+<p>海克斯科技 风 水</p>
+</blockquote>
+<p><img src="21.jpg"></p>
+<blockquote>
+<p>队友指示器  敌方指示器</p>
+</blockquote>
+<h1 id="五、造型"><a href="#五、造型" class="headerlink" title="五、造型"></a>五、造型</h1><p><img src="22.jpg"></p>
+<p><strong>用造型语言定义我们的特效风格</strong></p>
+<p>造型是定义特效艺术风格的另一个重要元素，可以帮助减少视觉噪音</p>
+<p>常见的造型包括：简洁的细节、手绘的贴图、软硬混合的形状、清晰的外轮廓和运动物体的贴图</p>
+<p>特效贴图造型指南</p>
+<ul>
+<li>所有的贴图都需要手绘，细节简洁明了</li>
+<li>贴图需要混合柔软和尖锐的形状</li>
+</ul>
+<blockquote>
+<p><strong>准确的描绘</strong><br>手绘贴图配合软硬结合的轮廓线，效果最好</p>
+</blockquote>
+<blockquote>
+<p><strong>不准确的描绘</strong><br>避免使用照片或细节冗余的素材，会造成不必要的噪音</p>
+</blockquote>
+<p><img src="23.jpg"></p>
+<p><strong>创造明确的形状轮廓</strong></p>
+<p>创造轮廓清晰的形状是减少团战中噪音的关键，也能快速传达游戏玩法并表达法术主题</p>
+<blockquote>
+<p><strong>不准确的描述</strong><br>由于特效中有太多细节和对比，所以很难分辨出真正运动的物体在哪，特效形状是什么</p>
+</blockquote>
+<blockquote>
+<p><strong>准确的描述</strong><br>这是个轮廓恰当的最好示范。形状简单，有足够宽的亮度范围来制造焦点</p>
+</blockquote>
+<p><img src="24.jpg"></p>
+<p>用形状层本身制作动画</p>
+<p>在一个特效中加入模糊效果，可以营造运动的错觉，有助于增强特效的方向感，并清楚地传达出游戏玩法。</p>
+<blockquote>
+<p><strong>不准确的描绘</strong><br>如果快速运动的粒子没有运动模糊，会导致视觉噪音和掉帧的错觉</p>
+</blockquote>
+<blockquote>
+<p><strong>准确的描绘</strong><br>这是个很好的例子，例子有指向性的形状和运动模糊，指明了特效运动的方向</p>
+</blockquote>
+<h1 id="六、节奏"><a href="#六、节奏" class="headerlink" title="六、节奏"></a>六、节奏</h1><p><img src="25.jpg"></p>
+<p><strong>特效中节奏的重要性</strong></p>
+<p>节奏对特效很重要，在给特效创建有意思的动画和视觉兴趣点时起到关键作用。</p>
+<p>一个特效随着生命周期的变化方式，为其功能提供了关键的视觉信息。</p>
+<p>特效节奏指引</p>
+<ul>
+<li>所有特效都应有预备和消散</li>
+<li>尾声应被视为次要效果，具有较低亮度、饱和度和不透明度</li>
+<li>能量衰减可以通过改变亮度、色相、饱和度、不透明度或大小来表达</li>
+<li>颜色变调、亮度或不透明度都是能跟特效节奏而变化的元素</li>
+</ul>
+<p><img src="Q1.gif"></p>
+<blockquote>
+<p>塞恩Q的指示器<br>塞恩Q充满眩晕范围所需时间、特效范围都用视觉时钟清晰表达出来</p>
+</blockquote>
+<p><img src="26.jpg"></p>
+<p><strong>用节奏传达游戏玩法</strong></p>
+<p>一个特效的节奏传达了特定的玩法瞬间</p>
+<p><img src="E1.gif"></p>
+<blockquote>
+<p>普朗克 木桶爆炸<br>普朗克的木桶爆炸是一个好例子，展示特效不同阶段</p>
+</blockquote>
+<blockquote>
+<p>预备<br>主爆炸<br>消散</p>
+</blockquote>
+<p><img src="27.jpg"></p>
+<p><strong>为精确的位移提供动画</strong></p>
+<p>元素正确的运动是让特效可信的关键</p>
+<p>准确且有冲击力的节奏清晰传达了游戏玩法，并为玩家提供了竞技性和过瘾的体验。</p>
+<p><img src="A1.gif"></p>
+<blockquote>
+<p><strong>无限烈焰 戴安娜</strong><br>无限烈焰戴安娜的火焰余烬增强了皮肤的主体性，同时创造了有冲击力的瞬间。</p>
+</blockquote>
+<p><img src="W1.gif"></p>
+<blockquote>
+<p>亚索 风墙<br>亚索风墙很好体现了《英雄联盟》中风的运动。</p>
+</blockquote>
+<p><img src="Q2.gif"></p>
+<blockquote>
+<p>律政大亨 蒙多<br>蒙多是一个很好的例子，展示了重力对纸的正确影响。</p>
+</blockquote>
+<p><img src="28.jpg"></p>
+<p><strong>用有活力的节奏提升艺术感</strong></p>
+<p>有活力的节奏创造出具有冲击力的瞬间，创造出更高的满意度和更有趣的特效。</p>
+<p><img src="W2.gif"></p>
+<blockquote>
+<p>准确描述<br>艾克的R用有活力的节奏创造出更具有冲击力和强大的瞬间。</p>
+</blockquote>
+<blockquote>
+<p>不准确的描述<br>投掷特效和爆炸的线性节奏导致了一个无聊的瞬间</p>
+</blockquote>
+<p><img src="29.jpg"></p>
+<p><strong>减少特效在屏幕上停留的时间</strong></p>
+<p>我们有意将一个特效的持续时间降到最低，以减少团战的视觉噪音。</p>
+<blockquote>
+<p><strong>不准确的描绘</strong><br>冰雪女神辛德拉的W极不透明，并且有不必要的长时间逗留<br>让人过于关注这个特效，且很可能掩盖同屏发生的其他特效。</p>
+</blockquote>
+<blockquote>
+<p><strong>准确的描绘</strong><br>仲裁圣女辛德拉的W很快就消失，且即使在它的高光时刻也是有一点透明的，使其他特效可以清晰的展现出来。</p>
+</blockquote>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%89%B9%E6%95%88/" rel="tag"># 特效</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/12/16/RDG101/" rel="prev" title="RDG101">
+      <i class="fa fa-chevron-left"></i> RDG101
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/12/20/UnityPBR/" rel="next" title="UnityPBR">
+      UnityPBR <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E6%A6%82%E8%BF%B0"><span class="nav-text">一、概述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E6%B8%B8%E6%88%8F%E7%8E%A9%E6%B3%95"><span class="nav-text">二、游戏玩法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E4%BA%AE%E5%BA%A6"><span class="nav-text">三、亮度</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9B%9B%E3%80%81%E8%89%B2%E5%BD%A9"><span class="nav-text">四、色彩</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E9%80%A0%E5%9E%8B"><span class="nav-text">五、造型</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%AD%E3%80%81%E8%8A%82%E5%A5%8F"><span class="nav-text">六、节奏</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NeoZheng"
+      src="/images/MyShow.jpg">
+  <p class="site-author-name" itemprop="name">NeoZheng</p>
+  <div class="site-description" itemprop="description">潜心技术，努力奋斗</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/aIFzzf" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;aIFzzf" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fzzf-90-50" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fzzf-90-50" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>Zhihu</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy; 2021-12 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NeoZheng</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">73k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:06</span>
+</div>
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : true,
+      appId      : 'NMN4QIvjAh5qJ5q3mziedsgN-gzGzoHsz',
+      appKey     : 'rIJIzKcDCj5iPy38T3RXtSa2',
+      placeholder: "Comments welcome",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

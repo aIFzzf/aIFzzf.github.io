@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<!--浏览器搞笑标题-->
+<script type="text/javascript" src="\js\FunnyTitle.js"></script>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/icon_study_32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon_study_16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文主要记录下UE5.1引擎升级后对TwoSideFoliage材质的优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE5.1 Two Side Foliage材质改进及优化">
+<meta property="og:url" content="http://example.com/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/index.html">
+<meta property="og:site_name" content="风中追风">
+<meta property="og:description" content="本文主要记录下UE5.1引擎升级后对TwoSideFoliage材质的优化">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/lumen-foliage-2.png">
+<meta property="og:image" content="http://example.com/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/Untitled_1.png">
+<meta property="og:image" content="http://example.com/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/Untitled_2.png">
+<meta property="article:published_time" content="2023-03-12T07:40:00.000Z">
+<meta property="article:modified_time" content="2023-03-12T07:41:38.113Z">
+<meta property="article:author" content="NeoZheng">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="Shading">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/lumen-foliage-2.png">
+
+<link rel="canonical" href="http://example.com/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>UE5.1 Two Side Foliage材质改进及优化 | 风中追风</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><link rel="alternate" href="/atom.xml" title="风中追风" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">风中追风</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/MyShow.jpg">
+      <meta itemprop="name" content="NeoZheng">
+      <meta itemprop="description" content="潜心技术，努力奋斗">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风中追风">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE5.1 Two Side Foliage材质改进及优化
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-03-12 15:40:00 / 修改时间：15:41:38" itemprop="dateCreated datePublished" datetime="2023-03-12T15:40:00+08:00">2023-03-12</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/UnrealEngine/" itemprop="url" rel="index"><span itemprop="name">UnrealEngine</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/03/12/UE5.1%20%E6%A0%91%E5%8F%B6%E6%9D%90%E8%B4%A8%E5%AF%B9%E6%AF%94/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+            <div class="post-description">本文主要记录下UE5.1引擎升级后对TwoSideFoliage材质的优化</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="UE5-1-Two-Side-Foliage材质改进及优化"><a href="#UE5-1-Two-Side-Foliage材质改进及优化" class="headerlink" title="UE5.1 Two Side Foliage材质改进及优化"></a>UE5.1 Two Side Foliage材质改进及优化</h1><p><img src="lumen-foliage-2.png" alt="Lumen Two-Sided Foliage Example 2"></p>
+<p>本文在于项目升级5.1后做的横向测试对比，写做笔记记录下。</p>
+<h1 id="改动"><a href="#改动" class="headerlink" title="改动"></a>改动</h1><ul>
+<li><code>Screen probe importance sampling</code>在两侧的树叶上被禁用，因此一半的光线用于收集背面照明</li>
+<li><code>Screen traces</code> 过背面光线以避免立即自相交。其他跟踪方法使用背面法线进行偏置。</li>
+<li>Two Sided Foliage Shading 用 <code>DiffuseLighting * DiffuseColor + BackfaceDiffuseLighting * PreintegratedTwoSidedBxDF * SubsurfaceColor</code></li>
+<li><code>r.Lumen.ScreenProbeGather.TwoSidedFoliageBackfaceDiffuse</code> 关闭后会将次表面的颜色加到DiffuseColor(没有backface lighting)</li>
+<li><code>The High GI scalability level disables TwoSidedFoliageBackfaceDiffuse to avoid overhead</code></li>
+</ul>
+<h1 id="代码"><a href="#代码" class="headerlink" title="代码"></a>代码</h1><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// DiffuseIndirectComposite.usf</span></span><br><span class="line"><span class="keyword">if</span> (GBuffer.ShadingModelID == SHADINGMODELID_TWOSIDED_FOLIAGE)</span><br><span class="line">				&#123;</span><br><span class="line">					float3 SubsurfaceColor = <span class="built_in">ExtractSubsurfaceColor</span>(GBuffer);</span><br><span class="line"></span><br><span class="line">					<span class="keyword">if</span> (bLumenSupportBackfaceDiffuse &gt; <span class="number">0</span>)</span><br><span class="line">					&#123;</span><br><span class="line">						BackfaceDiffuseIndirectLighting += SubsurfaceColor * DiffuseIndirect_Textures_1.<span class="built_in">SampleLevel</span>(GlobalPointClampedSampler, SceneBufferUV, <span class="number">0</span>).rgb;</span><br><span class="line">					&#125;</span><br><span class="line">					<span class="keyword">else</span></span><br><span class="line">					&#123;</span><br><span class="line">						<span class="comment">// Adding Subsurface energy to the diffuse lobe is a poor approximation when DiffuseColor is small and SubsurfaceColor is large</span></span><br><span class="line">						<span class="comment">// Reduce the error by attenuating SubsurfaceColor, even though diffuse already has the 1/PI for Lambert.</span></span><br><span class="line">						<span class="type">const</span> <span class="type">float</span> PreintegratedTwoSidedBxDF = <span class="number">1.0f</span> / PI;</span><br><span class="line">						DiffuseColor += SubsurfaceColor * PreintegratedTwoSidedBxDF;</span><br><span class="line">					&#125;</span><br><span class="line">				&#125;</span><br><span class="line">IndirectLighting.Diffuse = (DiffuseIndirectLighting * DiffuseColor + BackfaceDiffuseIndirectLighting) * Occlusion.DiffuseOcclusion;</span><br><span class="line">IndirectLighting.Transmission = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>UE 在5.1中对two side foliage类型的材质进行背部次表面散射补偿。通过叠加次表面散射的颜色与间接光的乘积得到背部补偿。但会增加16mb的RT来累积光照</li>
+<li>可用点乘的方式在低版本的植被上添加自发光实现补偿trick效果。</li>
+</ul>
+<p><img src="Untitled_1.png"></p>
+<p><img src="Untitled_2.png"></p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="https://github.com/EpicGames/UnrealEngine/commit/3ecab7b620fe7c74c0427f5dc24cc32528eba301">https://github.com/EpicGames/UnrealEngine/commit/3ecab7b620fe7c74c0427f5dc24cc32528eba301</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/Shading/" rel="tag"># Shading</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/10/01/Modify%20Render%20Pipeline%20By%20Plugin%20in%20UE5/" rel="prev" title="使用插件修改UE5渲染管线">
+      <i class="fa fa-chevron-left"></i> 使用插件修改UE5渲染管线
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2023/05/15/UE%20%E7%A0%B4%E7%A2%8E%E6%96%B9%E6%A1%88/" rel="next" title="UE 破碎方案">
+      UE 破碎方案 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#UE5-1-Two-Side-Foliage%E6%9D%90%E8%B4%A8%E6%94%B9%E8%BF%9B%E5%8F%8A%E4%BC%98%E5%8C%96"><span class="nav-text">UE5.1 Two Side Foliage材质改进及优化</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%94%B9%E5%8A%A8"><span class="nav-text">改动</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BB%A3%E7%A0%81"><span class="nav-text">代码</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NeoZheng"
+      src="/images/MyShow.jpg">
+  <p class="site-author-name" itemprop="name">NeoZheng</p>
+  <div class="site-description" itemprop="description">潜心技术，努力奋斗</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/aIFzzf" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;aIFzzf" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fzzf-90-50" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fzzf-90-50" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>Zhihu</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy; 2021-12 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NeoZheng</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">73k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:06</span>
+</div>
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : true,
+      appId      : 'NMN4QIvjAh5qJ5q3mziedsgN-gzGzoHsz',
+      appKey     : 'rIJIzKcDCj5iPy38T3RXtSa2',
+      placeholder: "Comments welcome",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
