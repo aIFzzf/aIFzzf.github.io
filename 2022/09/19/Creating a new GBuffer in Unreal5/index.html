@@ -29,7 +29,7 @@
 <meta property="og:site_name" content="风中追风">
 <meta property="og:description" content="本文主要记录了UE5如何通过修改源代码添加扩充引擎GBuffer，同时对相关GBuffer进行细分学习过程。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Blog/source/_posts/UnityPBR/Untitled.png">
+<meta property="og:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Blog/source/_posts/Creating%20a%20new%20GBuffer%20in%20Unreal5/Untitled.png">
 <meta property="og:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Blog/source/_posts/Adding%20a%20new%20Shading%20Model/Untitled%201.png">
 <meta property="og:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Blog/source/_posts/Adding%20a%20new%20Shading%20Model/Untitled%202.png">
 <meta property="og:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Blog/source/_posts/Adding%20a%20new%20Shading%20Model/Untitled%203.png">
@@ -66,12 +66,12 @@
 <meta property="og:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Untitled%2034.png">
 <meta property="og:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Untitled%2035.jpg">
 <meta property="article:published_time" content="2022-09-19T14:36:00.000Z">
-<meta property="article:modified_time" content="2023-05-02T13:54:52.377Z">
+<meta property="article:modified_time" content="2023-06-01T16:26:40.860Z">
 <meta property="article:author" content="NeoZheng">
 <meta property="article:tag" content="UE">
 <meta property="article:tag" content="Shading">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Blog/source/_posts/UnityPBR/Untitled.png">
+<meta name="twitter:image" content="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/Blog/source/_posts/Creating%20a%20new%20GBuffer%20in%20Unreal5/Untitled.png">
 
 <link rel="canonical" href="http://example.com/2022/09/19/Creating%20a%20new%20GBuffer%20in%20Unreal5/">
 
@@ -236,7 +236,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-05-02 21:54:52" itemprop="dateModified" datetime="2023-05-02T21:54:52+08:00">2023-05-02</time>
+                <time title="修改时间：2023-06-02 00:26:40" itemprop="dateModified" datetime="2023-06-02T00:26:40+08:00">2023-06-02</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -304,7 +304,7 @@
 <p>The G-buffer is the collective term of all textures used to store lighting-relevant data for the final lighting pass. (定义来自<a target="_blank" rel="noopener" href="https://learnopengl.com/Advanced-Lighting/Deferred-Shading">here</a>)</p>
 <p>了解了GBuffer的定义后我们来了解下UE对GBuffer的相关定义和处理：</p>
 <h1 id="2-UE中的GBuffer解析"><a href="#2-UE中的GBuffer解析" class="headerlink" title="2.UE中的GBuffer解析"></a>2.UE中的GBuffer解析</h1><h2 id="2-1-初步了解GBuffer"><a href="#2-1-初步了解GBuffer" class="headerlink" title="2.1 初步了解GBuffer"></a>2.1 初步了解GBuffer</h2><p>首先我们在延迟渲染中可以通过Renderdoc 截取看到 在渲染流程中会在不同时期对 GBuffer 进行读取/写入。</p>
-<p><img src="Blog/source/_posts/UnityPBR/Untitled.png"></p>
+<p><img src="Blog/source/_posts/Creating%20a%20new%20GBuffer%20in%20Unreal5/Untitled.png"></p>
 <p>UE会在渲染的BasePass阶段将场景相关信息写入存储到GBuffer中。并在后续Lighting阶段将GBuffer中的相关信息进行读取后参与计算光照结果。</p>
 <p><img src="Blog/source/_posts/Adding%20a%20new%20Shading%20Model/Untitled%201.png"></p>
 <p><em>这里可以看到在直接光的计算中使用的相关Gbuffer的读取。</em></p>
