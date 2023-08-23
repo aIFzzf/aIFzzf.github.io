@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<!--浏览器搞笑标题-->
+<script type="text/javascript" src="\js\FunnyTitle.js"></script>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/icon_study_32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/icon_study_16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="本文为参考相关资料后总结整理的Nanite原理个人理解，引用其他大佬的文章初步分析nanite在底层的实现，并为后续生产做相关思考与研究探索。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="UE5 Nanite 原理">
+<meta property="og:url" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="风中追风">
+<meta property="og:description" content="本文为参考相关资料后总结整理的Nanite原理个人理解，引用其他大佬的文章初步分析nanite在底层的实现，并为后续生产做相关思考与研究探索。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502144437.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502144619.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502144730.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502144733.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/NaniteGPUWorkflow.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502143913.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503174932.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503175311.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503175434.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503175522.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503175822.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503175900.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503180849.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503181157.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503181237.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230508103802.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503181616.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503181629.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506103816.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502160720.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503174034.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230508103913.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506101552.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506101611.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503181957.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506001731.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506001504.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506003315.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506003713.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506003951.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503174727.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230506104053.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230508103934.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502160853.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502160901.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502160909.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502161016.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502161023.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502161030.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502161049.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230508103947.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502161156.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502161708.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502161711.png">
+<meta property="og:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230503174341.png">
+<meta property="article:published_time" content="2023-08-23T16:11:36.228Z">
+<meta property="article:modified_time" content="2023-08-23T16:14:29.032Z">
+<meta property="article:author" content="NeoZheng">
+<meta property="article:tag" content="UE">
+<meta property="article:tag" content="Nanite">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/Pasted%20image%2020230502144437.png">
+
+<link rel="canonical" href="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>UE5 Nanite 原理 | 风中追风</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><link rel="alternate" href="/atom.xml" title="风中追风" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">风中追风</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/MyShow.jpg">
+      <meta itemprop="name" content="NeoZheng">
+      <meta itemprop="description" content="潜心技术，努力奋斗">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="风中追风">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          UE5 Nanite 原理
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-24 00:11:36 / 修改时间：00:14:29" itemprop="dateCreated datePublished" datetime="2023-08-24T00:11:36+08:00">2023-08-24</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/UnrealEngine/" itemprop="url" rel="index"><span itemprop="name">UnrealEngine</span></a>
+                </span>
+            </span>
+
+          
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2023/08/24/UE5%20Nanite%20%E5%8E%9F%E7%90%86/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+            <div class="post-description">本文为参考相关资料后总结整理的Nanite原理个人理解，引用其他大佬的文章初步分析nanite在底层的实现，并为后续生产做相关思考与研究探索。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>#Blog</p>
+<h1 id="Nanite原理"><a href="#Nanite原理" class="headerlink" title="Nanite原理"></a>Nanite原理</h1><h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>复杂场景绘制的瓶颈通常有两个：（1）每次Draw Call带来的CPU端验证及CPU-GPU之间的通信开销；（2）由于剔除不够精确导致的overdraw和由此带来的GPU计算资源的浪费；近年来渲染技术优化往往也都是围绕这两个难题:</p>
+<p>针对第一个：新一代的图形API，要求开发者自行处理CPU和GPU之间的同步；充分利用多核CPU的优势多线程向GPU提交命令。<br>针对第二个：减少CPU和GPU之间的数据通讯，诞生了<strong>GPU Driven Pipeline</strong>。把模型的顶点数据进一步切分为更细粒度的<strong>Cluster</strong>（或者叫做<strong>Meshlet</strong>），让每个Cluster的粒度能够更好地适应Vertex Processing阶段的Cache大小，并以Cluster为单位进行各类剔除（<strong>Frustum Culling，Occulsion Culling，Backface Culling</strong>）</p>
+<p><img src="Pasted%20image%2020230502144437.png"><br>基于Mesh Shader的Pipeline，Cluster剔除成为了顶点处理阶段的一部分，减少没必要的Vertex Buffer Load/Store</p>
+<h2 id="硬件光栅化和软件光栅化"><a href="#硬件光栅化和软件光栅化" class="headerlink" title="硬件光栅化和软件光栅化"></a>硬件光栅化和软件光栅化</h2><p><strong>传统光栅化硬件设计之初，设想的输入三角形大小是远大于一个像素的</strong>。基于这样的设想，硬件光栅化的过程通常是<strong>层次式的</strong>。以N卡的光栅器为例，一个三角形通常会经历两个阶段的光栅化：<strong>Coarse Raster</strong>和<strong>Fine Raster</strong> ， 前者以一个三角形作为输入，以8x8像素为一个块，将三角形光栅化为若干块（你也可以理解成在尺寸为原始FrameBuffer 1/8*1/8大小的FrameBuffer上做了一次粗光栅化）。在这个阶段，借由低分辨率的Z-Buffer，被遮挡的块会被整个剔除，N卡上称之为<strong>Z Cull</strong>；在Coarse Raster之后，通过Z Cull的块会被送到下一阶段做Fine Raster，最终生成用于着色计算的像素。在Fine Raster阶段，有我们熟悉的<strong>Early Z</strong>。由于mip-map采样的计算需要，我们必须知道每个像素相邻像素的信息，并利用采样UV的差分作为mip-map采样层级的计算依据。为此，Fine Raster最终输出的并不是一个个像素，而是2x2的小像素块（<strong>Pixel Quad</strong>）。</p>
+<p>对于接近像素大小的三角形来说，硬件光栅化的浪费就很明显了<br><img src="Pasted%20image%2020230502144619.png"><br>小三角形由于Pixel Quad造成的光栅化浪费</p>
+<p><strong>软光栅化（基于Compute Shader）的确有机会打败硬光栅化</strong>。这也正是Nanite的核心优化之一，这一优化使得UE5在小三角形光栅化的效率上<strong>提升了3倍</strong>。</p>
+<h2 id="Visibility-Buffer的新渲染管线"><a href="#Visibility-Buffer的新渲染管线" class="headerlink" title="Visibility Buffer的新渲染管线"></a><strong>Visibility Buffer</strong>的新渲染管线</h2><p>基于Visibility Buffer的算法不再单独产生臃肿的G-Buffer，而是以带宽开销更低的Visibility Buffer作为替代，Visibility Buffer通常需要这些信息：</p>
+<p>（1）<strong>InstanceID</strong>，表示当前像素属于哪个Instance（16~24 bits）；</p>
+<p>（2）<strong>PrimitiveID</strong>，表示当前像素属于Instance的哪个三角形（8~16 bits）；</p>
+<p>（3）<strong>Barycentric Coord</strong>，代表当前像素位于三角形内的位置，用重心坐标表示（16 bits）；</p>
+<p>（4）<strong>Depth Buffer</strong>，代表当前像素的深度（16~24 bits）；</p>
+<p>（5）<strong>MaterialID</strong>，表示当前像素属于哪个材质（8~16 bits）；</p>
+<p>我们只需要存储大约<strong>8~12 Bytes/Pixel</strong>即可表示场景中所有几何体的材质信息，同时，我们需要维护一个<strong>全局的顶点数据和材质贴图表</strong>，表中存储了当前帧所有几何体的顶点数据，以及材质参数和贴图。在光照着色阶段，只需要根据InstanceID和PrimitiveID从全局的Vertex Buffer中索引到相关三角形的信息；进一步地，根据像该素的重心坐标，对Vertex Buffer内的顶点信息（UV，Tangent Space等）进行插值得到逐像素信息；再进一步地，根据MaterialID去索引相关的材质信息，执行贴图采样等操作，并输入到光照计算环节最终完成着色，有时这类方法也被称为<strong>Deferred Texturing</strong>。</p>
+<p>下面是基于G-Buffer的渲染管线流程：</p>
+<p><img src="Pasted%20image%2020230502144730.png"></p>
+<p>这是基于Visibility-Buffer的渲染管线流程：<br><img src="Pasted%20image%2020230502144733.png"></p>
+<h1 id="Nanite"><a href="#Nanite" class="headerlink" title="Nanite"></a>Nanite</h1><p><img src="NaniteGPUWorkflow.png"></p>
+<p>它的核心思想可以简单拆解为两大部分：<strong>顶点处理的优化</strong>和<strong>像素处理的优化</strong>。<strong>其中顶点处理的优化主要是GPU Driven Pipeline的思想；像素处理的优化，是在Visibility Buffer思想的基础上，结合软光栅化完成的</strong>。</p>
+<p><img src="Pasted%20image%2020230502143913.png"></p>
+<h2 id="Geometry-Representation"><a href="#Geometry-Representation" class="headerlink" title="Geometry Representation"></a>Geometry Representation</h2><h3 id="View-Dependent-LOD-Transitions"><a href="#View-Dependent-LOD-Transitions" class="headerlink" title="View Dependent LOD Transitions"></a>View Dependent LOD Transitions</h3><p><img src="Pasted%20image%2020230503174932.png"></p>
+<p>解决LOD Cracks 方法： 将边进行锁住，永远锁住LOD0的边，但是会在变换时候边缘产生大量碎面，造成高频问题。<br><img src="Pasted%20image%2020230503175311.png"><br>nanite会生成cluster group ，然后只锁住cluster group的边<br>多个cluster 生成一个 cluster group ，build的时候重新计算cluster group中的cluster分布，从而保证锁边和优化三角面<br><img src="Pasted%20image%2020230503175434.png"><br><img src="Pasted%20image%2020230503175522.png"><br>如下图所示，多个cluster组成一个cluster group，再重新拆分为多个cluster。<br><img src="Pasted%20image%2020230503175822.png"><br>可以看到下面，第一个cluster group在变换到第二个cluster group 后锁边范围均发生改变。<br>cluster group 在变换LOD时锁边范围会变换掉， 这样避免掉前面LOD变化时候锁边边缘的碎面高频问题。</p>
+<p><img src="Pasted%20image%2020230503175900.png"><br><img src="Pasted%20image%2020230503180849.png"></p>
+<p><img src="Pasted%20image%2020230503181157.png"><br><img src="Pasted%20image%2020230503181237.png"><br><img src="Pasted%20image%2020230508103802.png"><br>对于一些微小物体离得很远以后的情况，我们减到最后一级cluster，其实它还是有128个面,还有Imposter atlas的方式处理</p>
+<h3 id="Detail-of-Simplification-QEM"><a href="#Detail-of-Simplification-QEM" class="headerlink" title="Detail of Simplification - QEM"></a>Detail of Simplification - QEM</h3><p><img src="Pasted%20image%2020230503181616.png"></p>
+<p>解析下图，多个clusters 通过 METIS库 组合成 cluster group， 通过QEM算法进行减面优化后，重新通过METIS库组合成新的cluster group<br><img src="Pasted%20image%2020230503181629.png"></p>
+<h2 id="Instance-Cull-amp-amp-Persistent-Cull"><a href="#Instance-Cull-amp-amp-Persistent-Cull" class="headerlink" title="Instance Cull &amp;&amp; Persistent Cull"></a>Instance Cull &amp;&amp; Persistent Cull</h2><p><img src="Pasted%20image%2020230506103816.png"><br>每个Nanite Mesh在预处理阶段，会被切成若干Cluster，每个Cluster包含128个三角形，整个Mesh以<strong>BVH（Bounding Volume Hierarchy）</strong>的形式组织成树状结构，每个叶节点代表一个Cluster。</p>
+<p>剔除分两步，包含了<strong>视锥剔除</strong>和<strong>基于HZB的遮挡剔除</strong>。其中Instance Cull以Mesh为单位，通过Instance Cull的Mesh会将其BVH的根节点送到Persistent Cull阶段进行层次式的剔除（若某个BVH节点被剔除，则不再处理其子节点）。</p>
+<p><strong>每棵BVH树一个单独的线程，也就是一个线程负责一个Nanite Mesh</strong>。从而实现<strong>Persistent Cull阶段的剔除任务数量映射到Compute Shader的线程数量</strong><br>由于每个Mesh的复杂度不同，其BVH树的节点数、深度差异很大，并行性很差，Nanite解决这个问题的思路是：设置固定数量的线程，每个线程通过一个全局的FIFO任务队列去取BVH节点进行剔除，若该节点通过了剔除，则把该节点的所有子节点也放进任务队列尾部，然后继续循环从全局队列中取新的节点，直到整个队列为空且不再产生新的节点。<strong>这其实是一个多线程并发的经典生产-消费者模式，不同的是，这里的每个线程既充当生产者，又充当消费者</strong>。通过这样的模式，Nanite就保证了各个线程之间的处理时长大致相同。</p>
+<p><img src="Pasted%20image%2020230502160720.png"></p>
+<p>整个剔除阶段分为两个Pass：<strong>Main Pass</strong>和<strong>Post Pass</strong>（可以通过控制台变量设置为只有Main Pass）。这两个Pass的逻辑基本是一致的，区别仅仅在于Main Pass遮挡剔除使用的HZB是基于<strong>上一帧数据</strong>构造的，而Post Pass则是使用Main Pass结束后构建的<strong>当前帧的HZB</strong>，这样是为了防止上一帧的HZB错误地剔除了某些可见的Mesh。<br><img src="Pasted%20image%2020230503174034.png"></p>
+<p>需要注意的是，<strong>Nanite并未使用Mesh Shader</strong>，究其原因，一方面是因为Mesh Shader的支持尚未普及；另一方面是由于Nanite使用软光栅化，Mesh Shader的输出仍要写回GPU Buffer再用于软光栅化输入，因此相较于CS的方案并没有太多带宽的节省。</p>
+<p><img src="Pasted%20image%2020230508103913.png"></p>
+<h2 id="Runtime-LOD-Selection"><a href="#Runtime-LOD-Selection" class="headerlink" title="Runtime LOD Selection"></a>Runtime LOD Selection</h2><h3 id="LOD-Selection-Parallel"><a href="#LOD-Selection-Parallel" class="headerlink" title="LOD Selection Parallel"></a>LOD Selection Parallel</h3><p><img src="Pasted%20image%2020230506101552.png"><br><img src="Pasted%20image%2020230506101611.png"><br>整个树状的数据结构，error从下往上逐步递增。</p>
+<p><img src="Pasted%20image%2020230503181957.png"></p>
+<p>内部对整个cluster group 作为一个虚拟节点，整个节点有个error值。</p>
+<p><img src="Pasted%20image%2020230506001731.png"></p>
+<p><img src="Pasted%20image%2020230506001504.png"></p>
+<p>每个cluster group 中的cluster存着自己的error，每个cluster group存该cluster group的error，最底层的cluster的error统一设置为-1，树的全部节点丢到GPU里面坐并行化运算。（空间换时间）</p>
+<h3 id="Build-BVH-for-Acceleration-of-LOD-Selection"><a href="#Build-BVH-for-Acceleration-of-LOD-Selection" class="headerlink" title="Build BVH for Acceleration of LOD Selection"></a>Build BVH for Acceleration of LOD Selection</h3><p><img src="Pasted%20image%2020230506003315.png"><br>把每个LOD当作节点组建成新的BVH Tree<br><img src="Pasted%20image%2020230506003713.png"></p>
+<p>对于遍历上述bvh树，官方相当于再开一个线程池，做一个MPMC 进程队列来快速处理<br><img src="Pasted%20image%2020230506003951.png"></p>
+<h3 id="Screen-Pixels-and-Target"><a href="#Screen-Pixels-and-Target" class="headerlink" title="Screen Pixels and Target"></a>Screen Pixels and Target</h3><p><img src="Pasted%20image%2020230503174727.png"><br>根据屏幕比例控制三角形面数<strong>（这一步需要TA与美术确定屏幕比与模型面数关系）</strong></p>
+<h2 id="Rasterization"><a href="#Rasterization" class="headerlink" title="Rasterization"></a>Rasterization</h2><p>在剔除结束之后，每个Cluster会根据其屏幕空间的大小送至不同的光栅器，<strong>大三角形和非Nanite Mesh仍然基于硬件光栅化，小三角形基于Compute Shader写成的软光栅化</strong>。<br><img src="Pasted%20image%2020230506104053.png"></p>
+<ul>
+<li>渲染 3333 个实例，每个实例包含 384 个顶点</li>
+<li>运行 34821 组compute shader<br><img src="Pasted%20image%2020230508103934.png"></li>
+</ul>
+<p>Nanite的Visibility Buffer为一张R32G32_UINT的贴图(8 Bytes/Pixel)，其中R通道的0<del>6 bit存储Triangle ID，7</del>31 bit存储Cluster ID，G通道存储32 bit深度：</p>
+<p><img src="Pasted%20image%2020230502160853.png"><br>Cluster ID<br><img src="Pasted%20image%2020230502160901.png"><br>Triangle ID<br><img src="Pasted%20image%2020230502160909.png"><br>Depth</p>
+<p>整个软光栅化的逻辑比较简单：基于扫描线算法，每个Cluster启动一个单独的Compute Shader，在Compute Shader初始阶段计算并缓存所有Clip Space Vertex Positon到shared memory，而后CS中的每个线程读取对应三角形的Index Buffer和变换后的Vertex Position，根据Vertex Position计算出三角形的边，执行背面剔除和小三角形（小于一个像素）剔除，然后利用原子操作完成Z-Test，并将数据写进Visibility Buffer。<strong>值得一提的是，为了保证整个软光栅化逻辑的简洁高效，Nanite Mesh不支持带有骨骼动画、材质中包含顶点变换或者Mask的模型</strong>。</p>
+<h3 id="Emit-Targets"><a href="#Emit-Targets" class="headerlink" title="Emit Targets"></a>Emit Targets</h3><p>为了保证数据结构尽量紧凑，减少读写带宽，所有软光栅化需要的数据都存进了一张Visibility Buffer，但是为了与场景中基于硬件光栅化生成的像素混合，我们最终还是需要将Visibility Buffer中的额外信息写入到统一的Depth/Stencil Buffer以及Motion Vector Buffer当中。这个阶段通常由几个全屏Pass组成：</p>
+<p>（1）<strong>Emit Scene Depth/Stencil/Nanite Mask/Velocity Buffer</strong>，这一步根据最终场景需要的RenderTarget数据，最多输出四个Buffer，其中Nanite Mask用0/1表示当前像素是普通Mesh还是Nanite Mesh（根据Visibility Buffer对应位置的ClusterID得到），对于Nanite Mesh Pixel，将Visibility Buffer中的Depth由UINT转为float写入Scene Depth Buffer，并根据Nanite Mesh是否接受贴花，将贴花对应的Stencil Value写入Scene Stencil Buffer，并根据上一帧位置计算当前像素的Motion Vector写入Velocity Buffer，非Nanite Mesh则直接discard跳过。</p>
+<p><img src="Pasted%20image%2020230502161016.png"></p>
+<p>Nanite Mask</p>
+<p><img src="Pasted%20image%2020230502161023.png"></p>
+<p>Velocity Buffer</p>
+<p><img src="Pasted%20image%2020230502161030.png"></p>
+<p>Scene Depth/Stencil Buffer</p>
+<p>（2）<strong>Emit Material Depth</strong>，这一步将生成一张Material ID Buffer，稍有不同的是，它并未存储在一张UINT类型的贴图，而是将UINT类型的Material ID转为float存储在一张格式为D32S8的Depth/Stencil Target上（稍后我们会解释这么做的理由），理论上最多支持2^32种材质（实际上只有14 bits用于存储Material ID），而Nanite Mask会被写入Stencil Buffer中。</p>
+<p><img src="Pasted%20image%2020230502161049.png"></p>
+<p>Material Depth Buffer</p>
+<h2 id="Classify-Materials-amp-amp-Emit-G-Buffer"><a href="#Classify-Materials-amp-amp-Emit-G-Buffer" class="headerlink" title="Classify Materials &amp;&amp; Emit G-Buffer"></a>Classify Materials &amp;&amp; Emit G-Buffer</h2><p><img src="Pasted%20image%2020230508103947.png"></p>
+<p><strong>Nanite的材质Shader是在Screen Space执行</strong></p>
+<p>Nanite在Base Pass绘制阶段并不是每种材质一个全屏Pass，而是将屏幕空间分成若干8x8的块，比如屏幕大小为800x600，则每种材质绘制时生成100x75个块，每块对应屏幕位置。为了能够整块地剔除，在Emit Targets之后，Nanite会启动一个CS用于统计每个块内包含的Material ID的种类。由于Material ID对应的Depth值预先是经过排序的，所以这个CS会统计每个8x8的块内Material Depth的最大最小值作为Material ID Range存储在一张R32G32_UINT的贴图中：</p>
+<p><img src="Pasted%20image%2020230502161156.png"><br>Material ID Range</p>
+<p>有了这张图之后，每种材质在其VS阶段，都会根据自身块的位置去采样这张贴图对应位置的Material ID Range，若当前材质的Material ID处于Range内，则继续执行材质的PS；否则表示当前块内没有像素使用该材质，则整块可以剔除，此时只需将VS的顶点位置设置为NaN，GPU就会将对应的三角形剔除。由于通常一个块内的材质种类不会太多，这种方法可以有效地减少不必要的overdraw。</p>
+<p><strong>所以一种材质一个drawcall</strong></p>
+<p>在完成了逐块的剔除后，Material Depth Buffer就派上了用场。在Base Pass PS阶段，Material Depth Buffer被设置为Depth/Stencil Target，同时Depth/Stencil Test被打开，Compare Function设置为Equal。只有当前像素的Material ID和待绘制的材质ID相同（Depth Test Pass）且该像素为Nanite Mesh（Stencil Test Pass）时才会真正执行PS，于是借助硬件的<strong>Early Z/Stencil我们完成了逐像素的材质ID剔除</strong>，整个绘制和剔除的原理见下图：</p>
+<p><img src="Pasted%20image%2020230502161708.png"></p>
+<p><img src="Pasted%20image%2020230502161711.png"><br>整个Base Pass分为两部分，首先绘制非Nanite Mesh的G-Buffer，这部分仍然在Object Space执行，和UE4的逻辑一致；之后按照上述流程绘制Nanite Mesh的G-Buffer，其中材质需要的额外VS信息（UV，Normal，Vertex Color等）通过像素的Cluster ID和Triangle ID索引到相应的Vertex Position，并变换到Clip Space，根据Clip Space Vertex Position和当前像素的深度值求出当前像素的重心坐标以及Clip Space Position的梯度（DDX/DDY），将重心坐标和梯度代入各类Vertex Attributes中插值即可得到所有的Vertex Attributes及其梯度（梯度可用于计算采样的Mip Map层级）。</p>
+<p><img src="Pasted%20image%2020230503174341.png"></p>
+<p>MaterialLayers虽然在MaterialInstances里面，但是不同的Layers组合会产生新的Shader，也就是说继承母材质后只要MaterialInstance修改过MaterialLayer栈，包括MaterialLayer和MaterialLayerBlend，会导致这个材质产生新的Shader。在执行Nanite最后的Emit GBuffer的时候每种材质都会执行一次屏幕空间的后处理  </p>
+<p>MaterialInstance是可能产生新shader的。出来MaterialLayer，还有一些控制静态分支的参数。比如你在节点连线的时候加了一个静态分支节点，然后用静态参数来控制编译时的分支走向。那在MaterialInstance里修改参数就会导致新的Shader生成</p>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/382687738">https://zhuanlan.zhihu.com/p/382687738</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Et4y1P7ro/?spm_id_from=333.788&amp;vd_source=a3c39604e9bbc2eac4a6998a43108c9b">https://www.bilibili.com/video/BV1Et4y1P7ro/?spm_id_from=333.788&amp;vd_source=a3c39604e9bbc2eac4a6998a43108c9b</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.elopezr.com/a-macro-view-of-nanite/">https://www.elopezr.com/a-macro-view-of-nanite/</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.twitch.tv/videos/1044652371">https://www.twitch.tv/videos/1044652371</a></p>
+<p>知乎从越大佬</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/UE/" rel="tag"># UE</a>
+              <a href="/tags/Nanite/" rel="tag"># Nanite</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/15/UE%20%E7%A0%B4%E7%A2%8E%E6%96%B9%E6%A1%88/" rel="prev" title="UE 破碎方案">
+      <i class="fa fa-chevron-left"></i> UE 破碎方案
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Nanite%E5%8E%9F%E7%90%86"><span class="nav-text">Nanite原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%89%8D%E6%8F%90"><span class="nav-text">前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A1%AC%E4%BB%B6%E5%85%89%E6%A0%85%E5%8C%96%E5%92%8C%E8%BD%AF%E4%BB%B6%E5%85%89%E6%A0%85%E5%8C%96"><span class="nav-text">硬件光栅化和软件光栅化</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Visibility-Buffer%E7%9A%84%E6%96%B0%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF"><span class="nav-text">Visibility Buffer的新渲染管线</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Nanite"><span class="nav-text">Nanite</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Geometry-Representation"><span class="nav-text">Geometry Representation</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#View-Dependent-LOD-Transitions"><span class="nav-text">View Dependent LOD Transitions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Detail-of-Simplification-QEM"><span class="nav-text">Detail of Simplification - QEM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Instance-Cull-amp-amp-Persistent-Cull"><span class="nav-text">Instance Cull &amp;&amp; Persistent Cull</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Runtime-LOD-Selection"><span class="nav-text">Runtime LOD Selection</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LOD-Selection-Parallel"><span class="nav-text">LOD Selection Parallel</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Build-BVH-for-Acceleration-of-LOD-Selection"><span class="nav-text">Build BVH for Acceleration of LOD Selection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Screen-Pixels-and-Target"><span class="nav-text">Screen Pixels and Target</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rasterization"><span class="nav-text">Rasterization</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Emit-Targets"><span class="nav-text">Emit Targets</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Classify-Materials-amp-amp-Emit-G-Buffer"><span class="nav-text">Classify Materials &amp;&amp; Emit G-Buffer</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-text">参考</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="NeoZheng"
+      src="/images/MyShow.jpg">
+  <p class="site-author-name" itemprop="name">NeoZheng</p>
+  <div class="site-description" itemprop="description">潜心技术，努力奋斗</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/aIFzzf" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;aIFzzf" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/fzzf-90-50" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;fzzf-90-50" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>Zhihu</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<div class="copyright">
+  
+  &copy; 2021-12 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">NeoZheng</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">80k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">1:13</span>
+</div>
+
+
+
+<a target="_blank" rel="noopener" href="https://clustrmaps.com/site/1bvog"  title="Visit tracker"><img src="//www.clustrmaps.com/map_v2.png?d=ef1vlhpw_-0wsQu24U9IbSB1cwBDxot163_KRfgVoGY&cl=ffffff" /></a>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : true,
+      appId      : 'NMN4QIvjAh5qJ5q3mziedsgN-gzGzoHsz',
+      appKey     : 'rIJIzKcDCj5iPy38T3RXtSa2',
+      placeholder: "Comments welcome",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
