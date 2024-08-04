@@ -6,7 +6,7 @@
   <link href="http://example.com/atom.xml" rel="self"/>
   
   <link href="http://example.com/"/>
-  <updated>2023-12-28T15:21:52.390Z</updated>
+  <updated>2024-08-04T01:34:58.944Z</updated>
   <id>http://example.com/</id>
   
   <author>
@@ -15,6 +15,27 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Lighting Channels 使用及原理</title>
+    <link href="http://example.com/2024/08/04/Lighting%20Channels%20%E4%BD%BF%E7%94%A8%E5%8F%8A%E5%8E%9F%E7%90%86/"/>
+    <id>http://example.com/2024/08/04/Lighting%20Channels%20%E4%BD%BF%E7%94%A8%E5%8F%8A%E5%8E%9F%E7%90%86/</id>
+    <published>2024-08-04T01:15:09.012Z</published>
+    <updated>2024-08-04T01:34:58.944Z</updated>
+    
+    <content type="html"><![CDATA[<p>#Blog</p><h1 id="Lighting-Channels-使用及原理"><a href="#Lighting-Channels-使用及原理" class="headerlink" title="Lighting Channels 使用及原理"></a>Lighting Channels 使用及原理</h1><h1 id="字面解释"><a href="#字面解释" class="headerlink" title="字面解释"></a>字面解释</h1><p>通过light channel设置可以实现灯光分层对不同层物体的影响<br>只影响对不透明物体的光照，不影响半透 or Mask材质</p><p><img src="Pasted%20image%2020240804092202.png"></p><p>开启light channels后在光照计算前多一步CopyStencilToLightingChannelTexture，大致计算时间在0.08ms<br><img src="Pasted%20image%2020240804092256.png"></p><h1 id="内部解析"><a href="#内部解析" class="headerlink" title="内部解析"></a>内部解析</h1><p>通过截帧可以看到采样光照的时候采样一张uint 的Texture作为LightingChannelsMask进行计算：<br><img src="Pasted%20image%2020240804092352.png"><br>通过查阅代码可知道：<br>DeferredShadingRenderer.cpp 中 通过  CopyStencilToLightingChannelTexture 函数初始化LightingChannelsTexture。</p><p>通过 FCopyStencilToLightingChannelsPS shader实现从stencil贴图中读取到LightingChannels</p><p>通过查阅源码可以得知UE对Lighting ChannelsMask进行位运算压缩，将多种情况压缩到3位存储到LightingChannelTexture：</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// EngineTypes.h</span></span><br><span class="line"><span class="comment">/** Converts lighting channels into a bitfield */</span>  </span><br><span class="line"><span class="keyword">inline</span> uint8 <span class="title function_">GetLightingChannelMaskForStruct</span><span class="params">(FLightingChannels Value)</span>  </span><br><span class="line">&#123;  </span><br><span class="line">   <span class="comment">// Note: this is packed into 3 bits of a stencil channel  </span></span><br><span class="line">   <span class="keyword">return</span> (uint8)((Value.bChannel0 ? <span class="number">1</span> : <span class="number">0</span>) | (Value.bChannel1 &lt;&lt; <span class="number">1</span>) | (Value.bChannel2 &lt;&lt; <span class="number">2</span>));  </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure><p>具体示例我用下表展示：<br><img src="Pasted%20image%2020240804092543.png"><br>lightingChannelsMask == 0 -&gt; 0001 -&gt;  1<br>lightingChannelsMask == 1 -&gt; 0010 -&gt;  2<br>lightingChannelsMask == 2 -&gt; 0100 -&gt;  4<br>lightingChannelsMask == 0，1 -&gt; 0011 -&gt;  3<br>lightingChannelsMask == 0，2 -&gt; 0101 -&gt;  5<br>lightingChannelsMask == 1，2 -&gt; 0110 -&gt;  6<br>lightingChannelsMask == 0，1，2 -&gt; 0111 -&gt;  7</p><p>Lighting Channels 统一合并在 stencil Texture，以下是SceneRenderTarget中对Lighting channels 进行的划分：</p><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SceneRenderTargets.h</span></span><br><span class="line"></span><br><span class="line">* Stencil layout during basepass / deferred decals:  </span><br><span class="line">*     BIT ID    | USE  </span><br><span class="line">*     [<span class="number">0</span>]       | sandbox <span class="title function_">bit</span> <span class="params">(bit to be use by any rendering passes, but must be properly reset to <span class="number">0</span> after using)</span>  </span><br><span class="line">*     [1]       | unallocated  </span><br><span class="line">*     [2]       | Distance Field Representation  </span><br><span class="line">*     [3]       | Temporal AA mask <span class="keyword">for</span> translucent object.  </span><br><span class="line">*     [4]       | Lighting channels  </span><br><span class="line">*     [5]       | Lighting channels  </span><br><span class="line">*     [6]       | Lighting channels  </span><br><span class="line">*     [7]       | primitive receive decal bit</span><br><span class="line"></span><br></pre></td></tr></table></figure><p>在写入DeferredLightUniforms前，UE已进行位移运算将stencil值调整到lighting channel对应的位数（具体可看：STENCIL_LIGHTING_CHANNELS_MASK）<br><img src="Pasted%20image%2020240804093457.png"></p><p>在shader中通过位运算可计算出通道<br>light channel == 1 : DeferredLightUniforms.LightingChannelMask &amp; 0x6</p><p>Notes: 在UE延迟渲染中，会将stencil值在Decal之前将stencil值拷贝到LightingChannelsTexture , 因为后面延迟贴花会重写这些值</p><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://docs.unrealengine.com/4.27/en-US/BuildingWorlds/LightingAndShadows/LightingChannels/">https://docs.unrealengine.com/4.27/en-US/BuildingWorlds/LightingAndShadows/LightingChannels/</a></p>]]></content>
+    
+    
+    <summary type="html">本文主要是近期对lighting Channels 源码学习记录</summary>
+    
+    
+    
+    <category term="UnrealEngine" scheme="http://example.com/categories/UnrealEngine/"/>
+    
+    
+    <category term="Engine" scheme="http://example.com/tags/Engine/"/>
+    
+  </entry>
   
   <entry>
     <title>自然颜色混合与机器学习实践</title>
